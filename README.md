@@ -1,9 +1,9 @@
 # Difix3D+
 
-**Difix3D+: Improving 3D Reconstructions with Single-Step Diffusion Models**  
-[Jay Zhangjie Wu*](https://zhangjiewu.github.io/), [Yuxuan Zhang*](https://scholar.google.com/citations?user=Jt5VvNgAAAAJ&hl=en), [Haithem Turki](https://haithemturki.com/), [Xuanchi Ren](https://xuanchiren.com/), [Jun Gao](https://www.cs.toronto.edu/~jungao/),  
-[Mike Zheng Shou](https://sites.google.com/view/showlab/home?authuser=0), [Sanja Fidler](https://www.cs.utoronto.ca/~fidler/), [Zan Gojcic†](https://zgojcic.github.io/), [Huan Ling†](https://www.cs.toronto.edu/~linghuan/) _(*/† equal contribution/advising)_  
-CVPR 2025 (Oral)  
+**Difix3D+: Improving 3D Reconstructions with Single-Step Diffusion Models**
+[Jay Zhangjie Wu*](https://zhangjiewu.github.io/), [Yuxuan Zhang*](https://scholar.google.com/citations?user=Jt5VvNgAAAAJ&hl=en), [Haithem Turki](https://haithemturki.com/), [Xuanchi Ren](https://xuanchiren.com/), [Jun Gao](https://www.cs.toronto.edu/~jungao/),
+[Mike Zheng Shou](https://sites.google.com/view/showlab/home?authuser=0), [Sanja Fidler](https://www.cs.utoronto.ca/~fidler/), [Zan Gojcic†](https://zgojcic.github.io/), [Huan Ling†](https://www.cs.toronto.edu/~linghuan/) _(*/† equal contribution/advising)_
+CVPR 2025 (Oral)
 [Project Page](https://research.nvidia.com/labs/toronto-ai/difix3d/) | [Paper](https://arxiv.org/abs/2503.01774) | [Model](https://huggingface.co/nvidia/difix) | [Demo](https://huggingface.co/spaces/nvidia/difix)
 
 <div align="center">
@@ -225,19 +225,50 @@ Our work is built upon the following projects:
 
 Shoutout to all the contributors of these projects for their invaluable work that made this research possible.
 
-## License/Terms of Use:
+---
 
-The use of the model and code is governed by the NVIDIA License. See [LICENSE.txt](LICENSE.txt) for details.
-Additional Information:  [LICENSE.md · stabilityai/sd-turbo at main](https://huggingface.co/stabilityai/sd-turbo/blob/main/LICENSE.md)
+## Training on Your Own COLMAP Dataset
 
-## Citation
+Below is the minimal three-step pipeline we use for all experiments. Feel free to adapt the paths to your own environment.
 
-```bibtex
-@inproceedings{wu2025difix3d+,
-  title={DIFIX3D+: Improving 3D Reconstructions with Single-Step Diffusion Models},
-  author={Wu, Jay Zhangjie and Zhang, Yuxuan and Turki, Haithem and Ren, Xuanchi and Gao, Jun and Shou, Mike Zheng and Fidler, Sanja and Gojcic, Zan and Ling, Huan},
-  booktitle={Proceedings of the Computer Vision and Pattern Recognition Conference},
-  pages={26024--26035},
-  year={2025}
-}
-```
+1. **Clean raw images (optional but recommended)**
+
+   ```bash
+   # run your preferred filtering script on the originals
+   ./one_shot_clean.sh
+   ```
+   
+   The output directory (`images_clean/`) should contain only the frames you want to reconstruct (e.g. ~400 instead of thousands).
+
+2. **Convert the cleaned images to Nerfstudio format**
+
+   ```bash
+   # remove any previous processed set
+   rm -rf ~/datasets/colmap_processed
+
+   # 0 = keep full resolution, use 1/2/… for additional 2× down-scales
+   ./process_dataset.sh \
+       ~/datasets/colmap_workspace/images_clean \
+       ~/datasets/colmap_processed \
+       0
+   ```
+
+   This creates `~/datasets/colmap_processed/` with:
+
+   * `images/` – copied (and optionally resized) images
+   * `transforms.json`, `cameras.json` – intrinsic & pose data
+
+3. **Launch Difix3D training**
+
+   ```bash
+   # edit run_difix3d_train.sh if your path differs
+   DATA_DIR="/home/azureuser/datasets/colmap_processed"
+
+   ./run_difix3d_train.sh > train.log 2>&1 &
+   tail -f train.log
+   ```
+
+   The script will create a new time-stamped folder under `outputs/` and automatically export a Gaussian Splat model when training finishes.
+
+That’s it – clean → convert → train! If you hit GPU/CPU memory limits, try down-scaling the images (`NUM_DOWNSCALES > 0`) or sampling fewer images/rays in `run_difix3d_train.sh`.
+
