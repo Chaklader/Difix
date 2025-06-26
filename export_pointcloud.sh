@@ -39,9 +39,17 @@ mkdir -p "${OUT_DIR}"
 
 echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 
+# Example: export a point cloud for a *specific* checkpoint
+#   • --normal-method open3d  – compute per-vertex normals via Open3D (install with `pip install open3d`)
+#   • You can add `--step <N>` instead of supplying an explicit checkpoint path.
+#   • Remove the flag or use `--normal-method none` to skip normals.
+#
+# This one-liner worked successfully on the A100 box:
+# ns-export pointcloud --load-config outputs/difix3d_20250626_073554/difix3d/2025-06-26_073600/config.yml --output-dir exports/ --normal-method open3d
+
 ns-export pointcloud \
   --load-config "${CFG}" \
   --output-dir "${OUT_DIR}" \
-  "$@"
+  --normal-method open3d 
 
 echo "Done."
