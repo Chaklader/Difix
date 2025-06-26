@@ -46,10 +46,7 @@ ns-train difix3d \
   --center_method none \
   --auto-scale-poses False
 
-# Export Gaussian splat after training finishes
-CFG=$(find ./outputs -type f -name config.yml | grep "${RUN_NAME}" | head -n 1 || true)
-if [[ -n "${CFG}" ]]; then
-  ns-export gaussian-splat \
-    --load-config "${CFG}" \
-    --output-dir "./exports/${RUN_NAME}"
-fi
+
+# After training completes you can export a lightweight PLY point-cloud with:
+#   ./export_pointcloud.sh "${RUN_NAME}"
+# (Gaussian-splat export requires a Splatfacto model and is thus omitted here.)
