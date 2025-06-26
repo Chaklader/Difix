@@ -22,6 +22,9 @@ RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 # i.e. every dimension is halved (4032×3024 → 2016×1512).
 
 
+# Ray batch size guidance (VRAM vs speed):
+#   24 GB GPU with downscale_factor 2 → 2 048 – 8 192 rays/batch
+#   downscale_factor 4 (smaller imgs) → 8 192 – 16 384 rays/batch
 # -----------------------------------------------------------------------------
 ns-train difix3d \
   --machine.num-devices 1 \
