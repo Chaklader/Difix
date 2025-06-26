@@ -23,6 +23,10 @@ pipe.enable_attention_slicing()      # lighter VRAM
 # DO NOT call pipe.enable_vae_tiling() – it breaks skip sizes
 
 TARGET = 1024                         # max side fed to VAE
+# NOTE: Images larger than TARGET are temporarily downscaled for the Difix
+#       model, then **upsampled back** so the file saved in images_clean/
+#       has exactly the same width × height as the original. No permanent
+#       resolution change occurs.
 
 for p in tqdm(sorted(img_dir.glob("*.jp*g"))):
     orig = load_image(str(p)).convert("RGB")
