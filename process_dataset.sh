@@ -7,7 +7,8 @@
 #
 # Usage:
 #   ./process_dataset.sh <COLMAP_WORKSPACE_DIR> <OUTPUT_DIR> [NUM_DOWNSCALES]
-./process_dataset.sh ~/datasets/colmap_workspace ~/datasets/colmap_processed 0
+#   example:
+#   ./process_dataset.sh ~/datasets/colmap_workspace ~/datasets/colmap_processed 0
 #   COLMAP_WORKSPACE_DIR : Path to the original COLMAP workspace that contains
 #                          the `images/` folder and (optionally) the COLMAP
 #                          database/sparse outputs.
