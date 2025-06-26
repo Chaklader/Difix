@@ -39,6 +39,19 @@ mkdir -p "${OUT_DIR}"
 
 echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 
+# ```bash
+# $ ns-export pointcloud --load-config outputs/abq/nerfacto/2023-05-31_152244/config.yml --output-dir exports/pcd/ --num-points 1000000 --remove-outliers True --normal-method model_output --normal-output-name normals --use-bounding-box True --bounding-box-min -1 -1 -1 --bounding-box-max 1 1 1
+# ```
+
+# And the error message:
+# ```
+# usage: ns-export [-h] {pointcloud,tsdf,poisson,marching-cubes,cameras}
+
+# ns-export: error: unrecognized arguments: --normal-method model_output --normal-output-name normals
+# ```
+
+# The error indicates that the `--normal-method` and `--normal-output-name` arguments are not recognized in this version of ns-export.
+
 # Example: export a point cloud for a *specific* checkpoint
 #   • --normal-method open3d  – compute per-vertex normals via Open3D (install with `pip install open3d`)
 #   • You can add `--step <N>` instead of supplying an explicit checkpoint path.
@@ -50,6 +63,7 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 ns-export pointcloud \
   --load-config "${CFG}" \
   --output-dir "${OUT_DIR}" \
-  --normal-method open3d 
+  --normal-method open3d \
+  "$@"
 
 echo "Done."
