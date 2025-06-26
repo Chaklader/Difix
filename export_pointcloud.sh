@@ -59,6 +59,13 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 #
 # This one-liner worked successfully on the A100 box:
 # ns-export pointcloud --load-config outputs/difix3d_20250626_073554/difix3d/2025-06-26_073600/config.yml --output-dir exports/ --normal-method open3d
+#  for EVAL 
+# from repo root or with PYTHONPATH set
+# ns-eval \
+#   --load-config outputs/difix3d_20250626_073554/difix3d/config.yml \
+#   --step 29999 \                    # omit for latest if your version supports --step
+#   --output-path eval_results
+# ns-eval --load-config outputs/difix3d_20250626_073554/difix3d/config.yml  --output-path eval_results
 
 ns-export pointcloud \
   --load-config "${CFG}" \
