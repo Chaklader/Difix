@@ -17,7 +17,6 @@ RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 ns-train difix3d \
   --machine.num-devices 1 \
   --vis tensorboard \
-  # --viewer.quit-on-train-completion True \
   --max_num_iterations 30000 \
   --pipeline.model.appearance-embed-dim 0 \
   --pipeline.model.camera-optimizer.mode off \
