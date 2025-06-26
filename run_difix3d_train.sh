@@ -19,7 +19,7 @@ RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 #   4 → images_4/ (quarter resolution)
 # Ensure this value equals 2^NUM_DOWNSCALES used in process_dataset.sh.
 # Using --downscale_factor 2 means Nerfstudio will read from images_2/,
-# i.e. every dimension is halved (4000×3000 → 2000×1500).
+# i.e. every dimension is halved (4032×3024 → 2016×1512).
 
 
 # -----------------------------------------------------------------------------
