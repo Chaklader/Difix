@@ -10,7 +10,7 @@ set -euo pipefail
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
-DATA_DIR="/home/azureuser/datasets/colmap_workspace"   # <- change if needed
+DATA_DIR="/home/azureuser/datasets/colmap_processed"   # <- processed dataset
 RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 
 # -----------------------------------------------------------------------------
@@ -24,9 +24,10 @@ ns-train difix3d \
   --pipeline.datamanager.train-num-images-to-sample-from -1 \
   --pipeline.datamanager.eval-num-images-to-sample-from -1 \
   --pipeline.datamanager.train-num-rays-per-batch 4096 \
+  --pipeline.datamanager.patch-size 1 \
   --experiment-name "${RUN_NAME}" \
   --project-name difix3d \
-  colmap \
+  nerfstudio-data \
   --data "${DATA_DIR}" \
   --downscale_factor 1 \
   --train-split-fraction 0.9 \
