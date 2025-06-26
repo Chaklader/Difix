@@ -237,7 +237,7 @@ Below is the minimal three-step pipeline we use for all experiments. Feel free t
    # run your preferred filtering script on the originals
    ./one_shot_clean.sh
    ```
-   
+
    The output directory (`images_clean/`) should contain only the frames you want to reconstruct (e.g. ~400 instead of thousands).
 
 2. **Convert the cleaned images to Nerfstudio format**
@@ -272,3 +272,19 @@ Below is the minimal three-step pipeline we use for all experiments. Feel free t
 
 That’s it – clean → convert → train! If you hit GPU/CPU memory limits, try down-scaling the images (`NUM_DOWNSCALES > 0`) or sampling fewer images/rays in `run_difix3d_train.sh`.
 
+
+### Training
+
+Yes—skipping the viewer’s pre-render has zero effect on training or on the quality of the final PLY/mesh. The step only produces preview images for the web viewer; it doesn’t influence optimization.
+
+To disable the viewer’s prerender, use one of the following options:
+
+```bash
+# fastest: no viewer at all
+./run_difix3d_train.sh --vis tensorboard        # or --vis wandb / none
+
+# or keep the viewer but skip the prerender
+./run_difix3d_train.sh \
+    --vis viewer \
+    --viewer.render-initial-trajectory False
+```
