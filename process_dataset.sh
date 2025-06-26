@@ -8,7 +8,7 @@
 # Usage:
 #   ./process_dataset.sh <COLMAP_WORKSPACE_DIR> <OUTPUT_DIR> [NUM_DOWNSCALES]
 #   example:
-#   ./process_dataset.sh ~/datasets/colmap_workspace/images_clean ~/datasets/colmap_processed 0
+#   ./process_dataset.sh ~/datasets/colmap_workspace/images_clean ~/datasets/colmap_processed 1
 #   NUM_DOWNSCALES controls additional 2× down-scales of the images:
 #     0 → keep original resolution (folder: images/)
 #     1 → half resolution (creates images_2/)
