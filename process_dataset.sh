@@ -8,7 +8,13 @@
 # Usage:
 #   ./process_dataset.sh <COLMAP_WORKSPACE_DIR> <OUTPUT_DIR> [NUM_DOWNSCALES]
 #   example:
-#   ./process_dataset.sh ~/datasets/colmap_workspace ~/datasets/colmap_processed 0
+#   ./process_dataset.sh ~/datasets/colmap_workspace/images_clean ~/datasets/colmap_processed 0
+#   NUM_DOWNSCALES controls additional 2× down-scales of the images:
+#     0 → keep original resolution (folder: images/)
+#     1 → half resolution (creates images_2/)
+#     2 → quarter resolution (creates images_4/), and so on.
+#   IMPORTANT: set --downscale_factor in run_difix3d_train.sh to 2^NUM_DOWNSCALES
+#   so the training script loads from the matching images_K/ folder.
 #   COLMAP_WORKSPACE_DIR : Path to the original COLMAP workspace that contains
 #                          the `images/` folder and (optionally) the COLMAP
 #                          database/sparse outputs.

@@ -13,6 +13,13 @@ export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 DATA_DIR="/home/azureuser/datasets/colmap_processed"   # <- processed dataset
 RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 
+# downscale_factor selects which image resolution folder to load:
+#   1 → images/ (original resolution)
+#   2 → images_2/ (half resolution)
+#   4 → images_4/ (quarter resolution)
+# Ensure this value equals 2^NUM_DOWNSCALES used in process_dataset.sh.
+
+
 # -----------------------------------------------------------------------------
 ns-train difix3d \
   --machine.num-devices 1 \
