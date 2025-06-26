@@ -60,6 +60,6 @@ ns-process-data images \
   --no-gpu
 
 echo "[process_dataset] Conversion finished. Key files:"
-ls -lh "$OUTPUT_DIR"/transforms.json "$OUTPUT_DIR"/cameras.json
+ls -lh "$OUTPUT_DIR"/transforms.json 
 
 echo "[process_dataset] Done."
