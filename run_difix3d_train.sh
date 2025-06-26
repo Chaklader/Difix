@@ -29,7 +29,7 @@ ns-train difix3d \
   --project-name difix3d \
   nerfstudio-data \
   --data "${DATA_DIR}" \
-  --downscale_factor 1 \
+  --downscale_factor 2 \
   --train-split-fraction 0.9 \
   --orientation-method none \
   --center_method none \
