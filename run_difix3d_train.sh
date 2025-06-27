@@ -26,27 +26,45 @@ RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 #   24 GB GPU with downscale_factor 2 → 2 048 – 8 192 rays/batch
 #   downscale_factor 4 (smaller imgs) → 8 192 – 16 384 rays/batch
 # -----------------------------------------------------------------------------
-ns-train difix3d \
+# Train a Gaussian-Splat model (Splatfacto) on the one-shot-cleaned images
+# Note: one_shot_clean.sh must have been run beforehand so ${DATA_DIR}
+# already points at the pre-cleaned, COLMAP-processed dataset.
+
+# ns-train splatfacto \
+# 		--pipeline.datamanager.images-on-gpu True \
+# 		--pipeline.model.use_bilateral_grid True \
+# 		--pipeline.datamanager.train-cameras-sampling-strategy fps \
+#         --data ./pd \
+#         --machine.num-devices 1 \
+# 		--vis $vis \
+#         --viewer.quit-on-train-completion True \
+#         --experiment-name $N3D_JOBID \
+# 		--project-name $proj_name \
+#         nerfstudio-data \
+#         --train-split-fraction $splitfrac
+
+ns-train splatfacto \
   --machine.num-devices 1 \
   --vis tensorboard \
+  --viewer.quit-on-train-completion True \
   --max_num_iterations 30000 \
-  --pipeline.model.appearance-embed-dim 0 \
+  --pipeline.datamanager.images-on-gpu True \
+  --pipeline.datamanager.train-cameras-sampling-strategy fps \
+  --pipeline.model.use_bilateral_grid True \
   --pipeline.model.camera-optimizer.mode off \
-  --pipeline.datamanager.train-num-images-to-sample-from -1 \
-  --pipeline.datamanager.eval-num-images-to-sample-from -1 \
-  --pipeline.datamanager.train-num-rays-per-batch 4096 \
-  --pipeline.datamanager.patch-size 1 \
   --experiment-name "${RUN_NAME}" \
-  --project-name difix3d \
+  --project-name splatfacto \
   nerfstudio-data \
   --data "${DATA_DIR}" \
-  --downscale_factor 2 \
+  --downscale_factor 1 \
   --train-split-fraction 0.9 \
   --orientation-method none \
   --center_method none \
   --auto-scale-poses False
 
 
-# After training completes you can export a lightweight PLY point-cloud with:
-#   ./export_pointcloud.sh "${RUN_NAME}"
-# (Gaussian-splat export requires a Splatfacto model and is thus omitted here.)
+# After training completes you can export the Gaussian-Splat model with:
+#   ns-export gaussian-splat \
+#     --load-config "$(find ./outputs -type f -name config.yml | grep "${RUN_NAME}" | head -n 1)" \
+#     --output-dir "exports/${RUN_NAME}"
+# (export_pointcloud.sh is still available if you merely want a point cloud.)
