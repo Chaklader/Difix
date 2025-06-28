@@ -1,4 +1,6 @@
-python - <<'PY'
+#!/usr/bin/env bash
+
+python3 - <<'PY'
 from pathlib import Path
 from PIL import Image
 folder = Path('~/datasets/colmap_workspace/images').expanduser()
