@@ -72,6 +72,62 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 #   --output-dir exports/gaussian_splat/ \
 #   --output-filename Nerf.ply
 # /home/azureuser/github/Difix3D/exports/gaussian_splat/Nerf.ply
+# ns-eval \
+#   --load-config outputs/difix3d_20250627_174106/splatfacto/2025-06-27_174113/config.yml \
+#   --output-path eval_results/gaussian_model.json
+
+# (difix) azureuser@PipelineGPU:~/github/Difix3D$ cat eval_results/gaussian_model.json 
+# {
+#   "experiment_name": "difix3d_20250627_174106",
+#   "method_name": "splatfacto",
+#   "checkpoint": "outputs/difix3d_20250627_174106/splatfacto/2025-06-27_174113/nerfstudio_models/step-000029999.ckpt",
+#   "results": {
+#     "psnr": 24.536195755004883,
+#     "psnr_std": 2.76033091545105,
+#     "ssim": 0.9524361491203308,
+#     "ssim_std": 0.039308369159698486,
+#     "lpips": 0.1788865178823471,
+#     "lpips_std": 0.07015663385391235,
+#     "num_rays_per_sec": 72083408.0,
+#     "num_rays_per_sec_std": 10386467.0,
+#     "fps": 5.915403842926025,
+#     "fps_std": 0.8523479700088501
+#   }
+
+
+# ##
+# Here are your model's evaluation metrics:
+
+# ## Quality Metrics:
+
+# **PSNR: 24.54 dB (±2.76)**
+# - Measures pixel-level accuracy
+# - 24.5 is decent, 25-30 is good, 30+ is excellent
+# - Your model has moderate quality
+
+# **SSIM: 0.952 (±0.039)**
+# - Measures structural similarity (0-1, higher is better)
+# - 0.95 is **very good** - maintains structure well
+# - Close to ground truth visually
+
+# **LPIPS: 0.179 (±0.070)**
+# - Perceptual similarity (lower is better)
+# - 0.179 is moderate - some perceptual differences
+# - <0.1 is excellent, 0.1-0.2 is good
+
+# ## Performance Metrics:
+
+# **Rays/sec: 72M (±10M)**
+# - Very fast ray processing
+# - Good for real-time applications
+
+# **FPS: 5.9 (±0.85)**
+# - Rendering speed in frames per second
+# - Depends on resolution and hardware
+
+# ## Summary:
+# Your model has **good visual quality** (high SSIM) with **moderate pixel accuracy** (PSNR). It renders **very fast** 
+# (72M rays/sec). The high standard deviations suggest quality varies across different test views.
 
 ns-export gaussian-splat \
   --load-config "${CFG}" \
