@@ -71,6 +71,7 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 #   --load-config outputs/difix3d_20250627_174106/splatfacto/2025-06-27_174113/config.yml \
 #   --output-dir exports/gaussian_splat/ \
 #   --output-filename Nerf.ply
+# /home/azureuser/github/Difix3D/exports/gaussian_splat/Nerf.ply
 
 ns-export gaussian-splat \
   --load-config "${CFG}" \
