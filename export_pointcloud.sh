@@ -67,10 +67,15 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 #   --output-path eval_results
 # ns-eval --load-config outputs/difix3d_20250626_073554/difix3d/config.yml  --output-path eval_results
 
-ns-export pointcloud \
+# ns-export gaussian-splat \
+#   --load-config outputs/difix3d_20250627_174106/splatfacto/2025-06-27_174113/config.yml \
+#   --output-dir exports/gaussian_splat/ \
+#   --output-filename Nerf.ply
+
+ns-export gaussian-splat \
   --load-config "${CFG}" \
   --output-dir "${OUT_DIR}" \
-  --normal-method open3d \
+  --output-filename Nerf.ply \
   "$@"
 
 echo "Done."
