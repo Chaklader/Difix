@@ -272,6 +272,28 @@ Below is the minimal three-step pipeline we use for all experiments. Feel free t
 
 That’s it – clean → convert → train! If you hit GPU/CPU memory limits, try down-scaling the images (`NUM_DOWNSCALES > 0`) or sampling fewer images/rays in `run_difix3d_train.sh`.
 
+---
+
+## 📜 Full Workflow Recap
+
+1. **One-shot clean** – `one_shot_clean.sh` / `one_shot_clean.py`
+2. **Prepare Nerfstudio data** – `process_dataset.sh` (COLMAP + JSON)
+3. **Train** – `run_difix3d_train.sh` (30 k iters, tuned params)
+4. **Export & utilities** – `converter.sh` → SPZ, rotation, boundary
+
+```mermaid
+flowchart LR
+    A[Raw images] --> B[One-shot clean\n(one_shot_clean.py)]
+    B --> C[images_clean/]
+    C --> D[COLMAP + process_dataset.sh]
+    D --> E[Dataset folder\ntransforms.json]
+    E --> F[Training\nrun_difix3d_train.sh]
+    F --> G[outputs/ <timestamp>]
+    G --> H[converter.sh / ns-export]
+    H --> I[exports/*.spz\nexports/*.json]
+```
+
+
 
 ### Training
 
