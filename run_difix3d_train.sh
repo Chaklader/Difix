@@ -51,7 +51,6 @@ ns-train splatfacto \
   --pipeline.datamanager.images-on-gpu True \
   --pipeline.datamanager.train-cameras-sampling-strategy fps \
   --pipeline.model.use_bilateral_grid True \
-  --pipeline.datamanager.eval-num-rays-per-batch 8192 \
   --pipeline.model.densify_grad_threshold 0.0002 \
   --pipeline.model.densify-interval 50 \
   --pipeline.model.prune-interval 50 \
