@@ -53,7 +53,6 @@ ns-train splatfacto \
   --pipeline.model.use_bilateral_grid True \
   --pipeline.model.densify-grad-thresh 0.0002 \
   --pipeline.model.refine-every 50 \
-  --optimizer.lr 0.002 \
   --pipeline.model.sched-decay-steps 20000 \
   --pipeline.model.camera-optimizer.mode off \
   --experiment-name "${RUN_NAME}" \
