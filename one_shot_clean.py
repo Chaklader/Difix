@@ -38,7 +38,7 @@ pipe.enable_attention_slicing()  # lighter VRAM
 # ----------------------------------------------------------------------------
 # Cleaning parameters
 # ----------------------------------------------------------------------------
-# max side fed to VAE (other valid choices: 2048, 2304, 2560)
+# max side fed to VAE (other valid choices: 2048, 2304, 2560, 2688)
 TARGET = 2688
 TIMESTEP = 230  # denoise strength (higher = milder)
 
