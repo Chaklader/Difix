@@ -53,7 +53,6 @@ ns-train splatfacto \
   --pipeline.model.use_bilateral_grid True \
   --pipeline.model.densify-grad-thresh 0.0002 \
   --pipeline.model.refine-every 50 \
-  --pipeline.model.max-num-points -1 \
   --pipeline.model.spatial-lr-scale 0.1 \
   --pipeline.model.opacity-loss-weight 0.0005 \
   --optimizer.lr 0.002 \
