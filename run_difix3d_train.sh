@@ -43,6 +43,9 @@ RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 #         nerfstudio-data \
 #         --train-split-fraction $splitfrac
 
+#  to stop the training:
+# pkill -f ns-train   # or simply ensure training is stopped
+
 ns-train splatfacto \
   --machine.num-devices 1 \
   --vis tensorboard \
