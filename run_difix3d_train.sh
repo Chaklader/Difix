@@ -51,14 +51,15 @@ ns-train splatfacto \
   --pipeline.datamanager.images-on-gpu True \
   --pipeline.datamanager.train-cameras-sampling-strategy fps \
   --pipeline.model.use_bilateral_grid True \
-  --pipeline.model.densify_grad_threshold 0.0002 \
+  --pipeline.datamanager.train-images-per-batch 1 \
+  --pipeline.model.densify-grad-thresh 0.0002 \
   --pipeline.model.densify-interval 50 \
   --pipeline.model.prune-interval 50 \
   --pipeline.model.max-num-points -1 \
-  --pipeline.model.spatial_lr_scale 0.1 \
+  --pipeline.model.spatial-lr-scale 0.1 \
   --pipeline.model.opacity-loss-weight 0.0005 \
   --optimizer.lr 0.002 \
-  --pipeline.model.sched_decay_steps 20000 \
+  --pipeline.model.sched-decay-steps 20000 \
   --pipeline.model.camera-optimizer.mode off \
   --experiment-name "${RUN_NAME}" \
   --project-name splatfacto \
