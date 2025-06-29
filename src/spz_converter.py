@@ -60,4 +60,4 @@ if __name__ == '__main__':
     # args = parser.parse_args()
 
     # convert_ply_to_spz(args.ply_input_path, args.spz_output_path)
-    convert_ply_to_spz("assets/Nerf.ply", "exports/Nerf.spz")
+    convert_ply_to_spz("assets/NeRF.ply", "exports/NeRF.spz")
