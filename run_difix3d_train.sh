@@ -47,10 +47,20 @@ ns-train splatfacto \
   --machine.num-devices 1 \
   --vis tensorboard \
   --viewer.quit-on-train-completion True \
-  --max_num_iterations 30000 \
+  --max-num-iterations 30000 \
   --pipeline.datamanager.images-on-gpu True \
   --pipeline.datamanager.train-cameras-sampling-strategy fps \
   --pipeline.model.use_bilateral_grid True \
+  --pipeline.datamanager.train-num-samples 4000000 \
+  --pipeline.datamanager.eval-num-samples 4000000 \
+  --pipeline.model.densify_grad_threshold 0.0002 \
+  --pipeline.model.densify-interval 50 \
+  --pipeline.model.prune-interval 50 \
+  --pipeline.model.max-num-points -1 \
+  --pipeline.model.spatial_lr_scale 0.1 \
+  --pipeline.model.opacity-loss-weight 0.0005 \
+  --optimizer.lr 0.002 \
+  --pipeline.model.sched_decay_steps 20000 \
   --pipeline.model.camera-optimizer.mode off \
   --experiment-name "${RUN_NAME}" \
   --project-name splatfacto \
