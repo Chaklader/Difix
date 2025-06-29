@@ -54,8 +54,8 @@ ns-train splatfacto \
   --pipeline.datamanager.images-on-gpu True \
   --pipeline.datamanager.train-cameras-sampling-strategy fps \
   --pipeline.model.use_bilateral_grid True \
-  --pipeline.model.densify-grad-thresh 0.0002 \
-  --pipeline.model.refine-every 50 \
+  --pipeline.model.densify-grad-thresh 0.00015 \
+  --pipeline.model.refine-every 25 \
   --pipeline.model.camera-optimizer.mode off \
   --experiment-name "${RUN_NAME}" \
   --project-name splatfacto \
