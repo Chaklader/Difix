@@ -519,10 +519,10 @@ dependencies:
       - timm==0.6.7
       - tinycss2==1.4.0
       - tokenizers==0.15.2
-      - torch==2.5.1+cu121
+      # torch installed via conda after env creation
       - torch-fidelity==0.3.0
       - torchmetrics==1.7.3
-      - torchvision==0.20.1+cu121
+      # torchvision installed via conda after env creation
       - tornado==6.5.1
       - tqdm==4.67.1
       - traitlets==5.14.3
