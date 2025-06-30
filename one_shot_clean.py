@@ -39,7 +39,7 @@ pipe.enable_attention_slicing()  # lighter VRAM
 # Cleaning parameters
 # ----------------------------------------------------------------------------
 # max side fed to VAE (valid multiples of 128 up to ≈4 K: 2048, 2304, 2560, 2688, 2816, 2944, 3072, 3200, 3328, 3456, 3584, 3712, 3840, 3968, 4096)
-TARGET = 2944
+TARGET = 2816
 TIMESTEP = 199  # denoise strength (higher = milder)
 
 # ----------------------------------------------------------------------------
