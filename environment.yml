@@ -518,7 +518,6 @@ dependencies:
       - tifffile==2025.5.10
       - timm==0.6.7
       - tinycss2==1.4.0
-      - tinycudann==1.7
       - tokenizers==0.15.2
       - torch==2.5.1+cu121
       - torch-fidelity==0.3.0
