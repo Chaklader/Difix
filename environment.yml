@@ -463,7 +463,7 @@ dependencies:
       - pure-eval==0.2.3
       - pycocotools==2.0.10
       - pycollada==0.9
-      - pycolmap==0.0.1
+      - pycolmap==0.6.1  # latest compatible version
       - pydantic==2.11.7
       - pydantic-core==2.33.2
       - pygments==2.19.2
