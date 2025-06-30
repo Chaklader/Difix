@@ -45,17 +45,14 @@ RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 
 #  to stop the training:
 # pkill -f ns-train   # or simply ensure training is stopped
-
 ns-train splatfacto \
   --machine.num-devices 1 \
   --vis tensorboard \
   --viewer.quit-on-train-completion True \
-  --max-num-iterations 30000 \
+  --max_num_iterations 30000 \
   --pipeline.datamanager.images-on-gpu True \
   --pipeline.datamanager.train-cameras-sampling-strategy fps \
   --pipeline.model.use_bilateral_grid True \
-  --pipeline.model.densify-grad-thresh 0.00015 \
-  --pipeline.model.refine-every 25 \
   --pipeline.model.camera-optimizer.mode off \
   --experiment-name "${RUN_NAME}" \
   --project-name splatfacto \
@@ -66,7 +63,6 @@ ns-train splatfacto \
   --orientation-method none \
   --center_method none \
   --auto-scale-poses False
-
 
 # After training completes you can export the Gaussian-Splat model with:
 #   ns-export gaussian-splat \
