@@ -342,7 +342,7 @@ dependencies:
       - defusedxml==0.7.1
       - descartes==1.1.0
       - diffusers==0.25.1
-      - difix3d==0.1.0
+      - -e .  # install Difix3D package from local source
       - dill==0.4.0
       - docstring-parser==0.16
       - dulwich==0.23.0
