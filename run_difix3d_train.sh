@@ -53,16 +53,12 @@ ns-train splatfacto \
   --pipeline.datamanager.images-on-gpu True \
   --pipeline.datamanager.train-cameras-sampling-strategy fps \
   --pipeline.model.use_bilateral_grid True \
-  --pipeline.model.camera-optimizer.mode off \
   --experiment-name "${RUN_NAME}" \
   --project-name splatfacto \
   nerfstudio-data \
   --data "${DATA_DIR}" \
   --downscale_factor 1 \
-  --train-split-fraction 0.9 \
-  --orientation-method none \
-  --center_method none \
-  --auto-scale-poses False
+  --train-split-fraction 0.9
 
 # After training completes you can export the Gaussian-Splat model with:
 #   ns-export gaussian-splat \
