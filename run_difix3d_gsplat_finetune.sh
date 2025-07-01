@@ -38,6 +38,6 @@ python examples/gsplat/simple_trainer_difix3d.py default \
   --data_factor "${DATA_FACTOR}" \
   --result_dir "${OUTPUT_DIR}" \
   --no-normalize-world-space \
-  --max_steps 30000 \
+  --max_steps 60000 \
   --test_every 1 \
   --ckpt "${CKPT_PATH}"
