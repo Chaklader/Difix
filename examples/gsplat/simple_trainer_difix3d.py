@@ -881,33 +881,36 @@ class Runner:
             image = Image.open(image_paths[i]).convert("RGB")
             ref_image = Image.open(ref_image_paths[i]).convert("RGB")
             # Ensure dimensions are divisible by 8 for VAE compatibility
+            orig_w, orig_h = image.size
             def make_divisible_by_8(dim):
                 return (dim // 8) * 8
-            
             # Fix dimensions
-            height = make_divisible_by_8(height)
-            width = make_divisible_by_8(width)
-            
-            # Resize images if needed
-            from PIL import Image
-            import numpy as np
-            if image.shape[:2] != (height, width):
-                image_pil = Image.fromarray((image * 255).astype(np.uint8))
-                image_pil = image_pil.resize((width, height))
-                image = np.array(image_pil) / 255.0
-            
-            if ref_image.shape[:2] != (height, width):
-                ref_image_pil = Image.fromarray((ref_image * 255).astype(np.uint8))
-                ref_image_pil = ref_image_pil.resize((width, height))
-                ref_image = np.array(ref_image_pil) / 255.0
-            width, height = (1024, 576) if image.size[0] > image.size[1] else (576, 1024)
-            output_image = self.difix(prompt="remove degradation", image=image, ref_image=ref_image, width=width, height=height, num_inference_steps=1, timesteps=[199], guidance_scale=0.0).images[0]
+            width  = make_divisible_by_8(orig_w)
+            height = make_divisible_by_8(orig_h)
+
+            if (orig_w, orig_h) != (width, height):
+                image = image.resize((width, height), Image.BILINEAR)
+                ref_image = ref_image.resize((width, height), Image.BILINEAR)
+
+            # choose output resolution for Difix inference
+            out_width, out_height = (1024, 576) if width > height else (576, 1024)
+            output_image = self.difix(
+                prompt="remove degradation",
+                image=image,
+                ref_image=ref_image,
+                width=out_width,
+                height=out_height,
+                num_inference_steps=1,
+                timesteps=[199],
+                guidance_scale=0.0,
+            ).images[0]
+
             os.makedirs(f"{self.render_dir}/novel/{step}/Fixed", exist_ok=True)
             output_image.save(f"{self.render_dir}/novel/{step}/Fixed/{i:04d}.png")
             if ref_image is not None:
                 os.makedirs(f"{self.render_dir}/novel/{step}/Ref", exist_ok=True)
                 ref_image.save(f"{self.render_dir}/novel/{step}/Ref/{i:04d}.png")
-    
+
         parser = deepcopy(self.parser)
         parser.test_every = 0
         parser.image_paths = [f"{self.render_dir}/novel/{step}/Fixed/{i:04d}.png" for i in range(len(novel_poses))]
