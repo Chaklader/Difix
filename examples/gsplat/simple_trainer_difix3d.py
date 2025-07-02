@@ -882,12 +882,15 @@ class Runner:
             ref_image = Image.open(ref_image_paths[i]).convert("RGB")
             # Ensure dimensions are divisible by 8 for VAE compatibility
             # --- downscale images to a VAE-friendly size to avoid OOM ---
-            orientation_landscape = image.width >= image.height
-            out_width, out_height = (1024, 576) if orientation_landscape else (576, 1024)
-
-            # VAE requires multiples of 8
-            out_width  = (out_width  // 8) * 8
-            out_height = (out_height // 8) * 8
+            TARGET = 2688  # max side length fed to Difix VAE
+            long_side = max(image.width, image.height)
+            if long_side > TARGET:
+                scale = TARGET / long_side
+                out_width = int(image.width * scale) // 8 * 8
+                out_height = int(image.height * scale) // 8 * 8
+            else:
+                out_width = (image.width // 8) * 8
+                out_height = (image.height // 8) * 8
 
             if (image.width, image.height) != (out_width, out_height):
                 image = image.resize((out_width, out_height), Image.BILINEAR)
