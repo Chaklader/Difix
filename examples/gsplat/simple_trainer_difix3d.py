@@ -859,6 +859,7 @@ class Runner:
     @torch.no_grad()
     def fix(self, step: int):
         print("Running fixer...")
+        import numpy as np
         if len(self.cfg.fix_steps) == 1:
             novel_poses = self.parser.camtoworlds[self.valset.indices]
         else:
@@ -878,6 +879,26 @@ class Runner:
         for i in tqdm.trange(0, len(novel_poses), desc="Fixing artifacts..."):
             image = Image.open(image_paths[i]).convert("RGB")
             ref_image = Image.open(ref_image_paths[i]).convert("RGB")
+            # Ensure dimensions are divisible by 8 for VAE compatibility
+            def make_divisible_by_8(dim):
+                return (dim // 8) * 8
+            
+            # Fix dimensions
+            height = make_divisible_by_8(height)
+            width = make_divisible_by_8(width)
+            
+            # Resize images if needed
+            from PIL import Image
+            import numpy as np
+            if image.shape[:2] != (height, width):
+                image_pil = Image.fromarray((image * 255).astype(np.uint8))
+                image_pil = image_pil.resize((width, height))
+                image = np.array(image_pil) / 255.0
+            
+            if ref_image.shape[:2] != (height, width):
+                ref_image_pil = Image.fromarray((ref_image * 255).astype(np.uint8))
+                ref_image_pil = ref_image_pil.resize((width, height))
+                ref_image = np.array(ref_image_pil) / 255.0
             width, height = (1024, 576) if image.size[0] > image.size[1] else (576, 1024)
             output_image = self.difix(prompt="remove degradation", image=image, ref_image=ref_image, width=width, height=height, num_inference_steps=1, timesteps=[199], guidance_scale=0.0).images[0]
             os.makedirs(f"{self.render_dir}/novel/{step}/Fixed", exist_ok=True)

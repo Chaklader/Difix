@@ -1039,6 +1039,14 @@ class DifixPipeline(
                 device,
                 generator,
             )
+            # Ensure latents have matching dimensions before concatenation
+            if latents.shape != ref_latents.shape:
+                # Align dimensions by cropping to smaller size
+                min_h = min(latents.shape[2], ref_latents.shape[2])
+                min_w = min(latents.shape[3], ref_latents.shape[3])
+                latents = latents[:, :, :min_h, :min_w]
+                ref_latents = ref_latents[:, :, :min_h, :min_w]
+
             latents = torch.cat([latents, ref_latents], dim=0)
             prompt_embeds = torch.cat([prompt_embeds, prompt_embeds], dim=0)
 
