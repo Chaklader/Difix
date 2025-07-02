@@ -860,6 +860,7 @@ class Runner:
     def fix(self, step: int):
         print("Running fixer...")
         import numpy as np
+        from PIL import Image
         if len(self.cfg.fix_steps) == 1:
             novel_poses = self.parser.camtoworlds[self.valset.indices]
         else:
