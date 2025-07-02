@@ -881,19 +881,18 @@ class Runner:
             image = Image.open(image_paths[i]).convert("RGB")
             ref_image = Image.open(ref_image_paths[i]).convert("RGB")
             # Ensure dimensions are divisible by 8 for VAE compatibility
-            orig_w, orig_h = image.size
-            def make_divisible_by_8(dim):
-                return (dim // 8) * 8
-            # Fix dimensions
-            width  = make_divisible_by_8(orig_w)
-            height = make_divisible_by_8(orig_h)
+            # --- downscale images to a VAE-friendly size to avoid OOM ---
+            orientation_landscape = image.width >= image.height
+            out_width, out_height = (1024, 576) if orientation_landscape else (576, 1024)
 
-            if (orig_w, orig_h) != (width, height):
-                image = image.resize((width, height), Image.BILINEAR)
-                ref_image = ref_image.resize((width, height), Image.BILINEAR)
+            # VAE requires multiples of 8
+            out_width  = (out_width  // 8) * 8
+            out_height = (out_height // 8) * 8
 
-            # choose output resolution for Difix inference
-            out_width, out_height = (1024, 576) if width > height else (576, 1024)
+            if (image.width, image.height) != (out_width, out_height):
+                image = image.resize((out_width, out_height), Image.BILINEAR)
+                ref_image = ref_image.resize((out_width, out_height), Image.BILINEAR)
+
             output_image = self.difix(
                 prompt="remove degradation",
                 image=image,
