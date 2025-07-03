@@ -44,14 +44,17 @@ def convert_nerfstudio_to_gsplat(nerfstudio_ckpt_path, output_path):
         num_gaussians = means.shape[0]
         print(f"Successfully extracted {num_gaussians} Gaussians")
         
-        # Create gsplat-compatible checkpoint
+        # Create Difix3D-compatible checkpoint (expects a `splats` dict with sh0/shN)
         gsplat_checkpoint = {
-            'means': means.clone(),
-            'scales': scales.clone(),
-            'quats': quats.clone(),
-            'features_dc': features_dc.clone(),
-            'features_rest': features_rest.clone(),
-            'opacities': opacities.clone(),
+            'splats': {
+                'means': means.clone(),
+                'scales': scales.clone(),
+                'quats': quats.clone(),
+                'opacities': opacities.clone(),
+                # SH coefficients: degree-0 in sh0, higher degrees in shN
+                'sh0': features_dc.clone().unsqueeze(1),     # [N,1,3]
+                'shN': features_rest.clone(),                 # [N,15,3]
+            },
             'step': checkpoint.get('step', 29999),
             'global_step': checkpoint.get('step', 29999),
         }
