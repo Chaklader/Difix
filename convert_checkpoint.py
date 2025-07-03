@@ -50,7 +50,7 @@ def convert_nerfstudio_to_gsplat(nerfstudio_ckpt_path, output_path):
                 'means': means.clone(),
                 'scales': scales.clone(),
                 'quats': quats.clone(),
-                'opacities': opacities.clone(),
+                'opacities': opacities.clone().squeeze(-1),
                 # SH coefficients: degree-0 in sh0, higher degrees in shN
                 'sh0': features_dc.clone().unsqueeze(1),     # [N,1,3]
                 'shN': features_rest.clone(),                 # [N,15,3]
