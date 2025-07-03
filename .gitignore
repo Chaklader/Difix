@@ -212,3 +212,21 @@ __marimo__/
 
 .idea/
 .idea/*
+
+# Difix output artifacts
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.yaml
+*.yml
+*.json
+
+# Training logs and output directories
+logs/
+output/
+outputs/
+exports/
+lightning_logs/
+wandb/
+runs/
