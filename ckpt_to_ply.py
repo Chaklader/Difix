@@ -114,17 +114,78 @@ def _write_ascii_ply(out_path: Path, xyz: np.ndarray, rgb: np.ndarray) -> None:
     print("Done.")
 
 
+def _write_binary_ply_3dgs(out_path: Path, splats: dict[str, torch.Tensor]) -> None:
+    """Write PLY in GraphDeco 3DGS layout (binary_little_endian)."""
+    N = splats["means"].shape[0]
+    # Prepare columns -----------------------------------------------------
+    xyz = splats["means"].cpu().numpy().astype("<f4")  # (N,3)
+
+    scales = np.exp(splats["scales"].cpu().numpy()).astype("<f4")  # (N,3)
+
+    quats = splats["quats"].cpu().numpy().astype("<f4")  # (N,4) assumed (x,y,z,w)
+    # reorder to rot_1 rot_2 rot_3 rot_0 (x y z w)
+    rot = quats[:, [0, 1, 2, 3]]
+
+    opacity = torch.sigmoid(splats["opacities"]).cpu().numpy().astype("<f4").reshape(N, 1)
+
+    sh0 = (_SH_C0 * splats["sh0"].squeeze(1)).cpu().numpy().astype("<f4")  # (N,3)
+
+    shN = splats["shN"].cpu().numpy().astype("<f4").reshape(N, -1)  # (N,45)
+
+    # Stack all fields
+    data = np.concatenate([xyz, scales, rot, opacity, sh0, shN], axis=1)
+
+    assert data.shape[1] == 59, f"Expected 59 properties per vertex, got {data.shape[1]}"
+
+    # Header --------------------------------------------------------------
+    header_lines = [
+        "ply",
+        "format binary_little_endian 1.0",
+        f"element vertex {N}",
+        "property float x",
+        "property float y",
+        "property float z",
+        "property float scale_0",
+        "property float scale_1",
+        "property float scale_2",
+        "property float rot_1",
+        "property float rot_2",
+        "property float rot_3",
+        "property float rot_0",
+        "property float opacity",
+        "property float f_dc_0",
+        "property float f_dc_1",
+        "property float f_dc_2",
+    ]
+    # f_rest_0 … f_rest_44
+    header_lines += [f"property float f_rest_{i}" for i in range(45)]
+    header_lines.append("end_header")
+    header = "\n".join(header_lines) + "\n"
+
+    with out_path.open("wb") as f:
+        f.write(header.encode("ascii"))
+        f.write(data.tobytes())
+
+    print(f"Binary PLY written to {out_path} with {N} vertices.")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Convert Difix3D GS checkpoint to ASCII PLY")
     parser.add_argument("--ckpt", required=True, type=Path, help="Path to ckpt_*.pt file")
     parser.add_argument("--output", required=True, type=Path, help="Output .ply path")
+    parser.add_argument("--format", choices=["ascii", "3dgs"], default="ascii",
+                        help="PLY flavour: simple ascii or 3dgs binary (default: ascii)")
     args = parser.parse_args(argv)
 
     splats = _load_splats(args.ckpt)
-    xyz, rgb = _splats_to_ply_arrays(splats)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    _write_ascii_ply(args.output, xyz, rgb)
+
+    if args.format == "ascii":
+        xyz, rgb = _splats_to_ply_arrays(splats)
+        _write_ascii_ply(args.output, xyz, rgb)
+    else:
+        _write_binary_ply_3dgs(args.output, splats)
 
 
 if __name__ == "__main__":
