@@ -10,7 +10,8 @@ source "${SCRIPT_DIR}/parameters.sh"
 # Set up the Difix3D enhancement command
 SCENE_ID="difix3d_20250706_113551"
 DATA_DIR="/home/azureuser/datasets/colmap_processed"
-CKPT_PATH="/mnt/nvme0n1/azureuser/finetune/gsplat_init.pt"
+# CKPT_PATH="/mnt/nvme0n1/azureuser/finetune/gsplat_init.pt"
+CKPT_PATH="outputs/difix3d_20250707_033442/splatfacto/2025-07-07_033450/nerfstudio_models/step-000029999.ckpt"
 OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/difix3d_enhanced/${SCENE_ID}"
 
 # Run Difix3D enhancement

@@ -73,6 +73,71 @@ def _print_splat_info(splats: dict[str, torch.Tensor]) -> None:
     print("=" * 25)
 
 
+def _filter_by_scene_bounds(splats: dict[str, torch.Tensor], max_distance: float = 15.0) -> dict[str, torch.Tensor]:
+    """Filter Gaussians to match compact scene bounds of working model."""
+    N_original = splats["means"].shape[0]
+    
+    means = splats["means"]
+    center = means.mean(dim=0)
+    distances = torch.norm(means - center, dim=1)
+    mask = distances < max_distance
+    
+    filtered_splats = {}
+    for key, tensor in splats.items():
+        filtered_splats[key] = tensor[mask]
+    
+    N_filtered = filtered_splats["means"].shape[0]
+    reduction = (N_original - N_filtered) / N_original
+    print(f"\n=== Scene Bounds Filtering Results ===")
+    print(f"Original: {N_original:,} Gaussians")
+    print(f"Filtered: {N_filtered:,} Gaussians")
+    print(f"Reduction: {reduction:.1%}")
+    print(f"Max distance from center: {max_distance}")
+    print("=" * 35)
+    return filtered_splats
+
+
+def _filter_opacity_preserving(splats: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    """Filter while preserving opacity distribution similar to working model."""
+    N_original = splats["means"].shape[0]
+    
+    # Get raw opacity values (not sigmoid)
+    raw_opacities = splats["opacities"].squeeze()
+    sigmoid_opacities = torch.sigmoid(raw_opacities)
+    scales = torch.exp(splats["scales"])
+    
+    # Create importance score that preserves low-opacity transitions
+    # This mimics the bimodal opacity distribution from the working model
+    importance_high = sigmoid_opacities ** 2  # Favor high opacity
+    importance_low = (1.0 - sigmoid_opacities) * 0.3  # Keep some low opacity for transitions
+    importance_combined = importance_high + importance_low
+    
+    # Add scale component (smaller scales are more important for detail)
+    avg_scale = scales.mean(dim=1)
+    scale_importance = 1.0 / (avg_scale + 1e-6)
+    
+    # Combined importance score
+    importance = importance_combined * scale_importance
+    
+    # Keep top 75% to preserve more transitions
+    target_count = int(N_original * 0.75)
+    _, top_indices = torch.topk(importance, target_count)
+    
+    filtered_splats = {}
+    for key, tensor in splats.items():
+        filtered_splats[key] = tensor[top_indices]
+    
+    N_filtered = filtered_splats["means"].shape[0]
+    reduction = (N_original - N_filtered) / N_original
+    print(f"\n=== Opacity-Preserving Filtering Results ===")
+    print(f"Original: {N_original:,} Gaussians")
+    print(f"Filtered: {N_filtered:,} Gaussians")
+    print(f"Reduction: {reduction:.1%}")
+    print("Preserved opacity transitions for better visual quality")
+    print("=" * 42)
+    return filtered_splats
+
+
 def _filter_for_real_estate_viewing(splats: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
     """Filtering optimized for real estate virtual tours."""
     N_original = splats["means"].shape[0]
@@ -81,7 +146,7 @@ def _filter_for_real_estate_viewing(splats: dict[str, torch.Tensor]) -> dict[str
     scales = torch.exp(splats["scales"])
     
     # For real estate: keep medium-high opacity and reasonable scales
-    opacity_mask = opacities > 0.03  # Keep more detail than aggressive filtering
+    opacity_mask = opacities > 0.015  # Lower threshold to preserve transitions
     scale_mask = scales.max(dim=1)[0] < 2.0  # Remove only very large artifacts
     
     # Combine filters
@@ -205,14 +270,13 @@ def _write_binary_ply_compatible(out_path: Path, splats: dict[str, torch.Tensor]
     # CRITICAL: Use RAW opacities (don't apply sigmoid!) - keep original values
     opacity = splats["opacities"].cpu().numpy().astype("<f4").reshape(N, 1)  # Raw values!
     
-    # Quaternions - normalize properly
-    quats = splats["quats"].cpu().numpy().astype("<f4")
-    quats = quats / np.linalg.norm(quats, axis=1, keepdims=True)
+    # CRITICAL: Use RAW quaternions (DON'T normalize!) - keep original values
+    quats = splats["quats"].cpu().numpy().astype("<f4")  # (N,4) - RAW values!
     
-    # Handle quaternion format detection
+    # Handle quaternion format detection WITHOUT normalization
     first_component_abs_mean = np.abs(quats[:, 0]).mean()
     if first_component_abs_mean > 0.7:
-        # Likely (w,x,y,z) format - reorder to (w,x,y,z) for good PLY format
+        # Likely (w,x,y,z) format - keep as (w,x,y,z) for good PLY format
         rot = quats[:, [0, 1, 2, 3]]  # Keep as (w,x,y,z) = (rot_0, rot_1, rot_2, rot_3)
         print("Quaternions detected as (w,x,y,z) - keeping order")
     else:
@@ -290,6 +354,10 @@ def main(argv: list[str] | None = None) -> None:
                         help="Smart LOD filtering keeping percentage of most important Gaussians (e.g., 0.4 for 40%%)")
     filter_group.add_argument("--custom-filter", action="store_true",
                         help="Use custom opacity/scale thresholds")
+    filter_group.add_argument("--scene-bounds", type=float, metavar="DISTANCE", default=None,
+                        help="Filter by scene bounds - keep Gaussians within DISTANCE from center")
+    filter_group.add_argument("--opacity-preserving", action="store_true",
+                        help="Advanced filtering that preserves opacity transitions (recommended for quality)")
     
     # Custom filter parameters
     parser.add_argument("--min-opacity", type=float, default=0.005,
@@ -303,7 +371,11 @@ def main(argv: list[str] | None = None) -> None:
     _print_splat_info(splats)
     
     # Apply filtering based on selected option
-    if args.real_estate:
+    if args.opacity_preserving:
+        splats = _filter_opacity_preserving(splats)
+    elif args.scene_bounds is not None:
+        splats = _filter_by_scene_bounds(splats, args.scene_bounds)
+    elif args.real_estate:
         splats = _filter_for_real_estate_viewing(splats)
     elif args.smart_lod is not None:
         splats = _filter_smart_lod(splats, args.smart_lod)
