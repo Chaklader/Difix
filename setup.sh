@@ -11,3 +11,5 @@ gdown https://drive.google.com/uc?id=1vEqISXwdgryUMWY5kad89HHuqHdtYzo4 -O images
 unzip images.zip 
 
 mkdir colmap_processed
+
+cd - 
