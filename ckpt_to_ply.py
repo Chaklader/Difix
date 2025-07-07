@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Convert a Difix3D / 3DGS training checkpoint (``ckpt_xxxxx_rank0.pt``)
-to a binary PLY file optimized for real estate virtual tours.
+to a binary PLY file compatible with your working PLY format.
 
 The checkpoint is expected to have been produced by Difix3D training
 and contains a ``splats`` dict with entries such as ``means``, ``scales``, 
@@ -11,9 +11,9 @@ Usage
 -----
 python ckpt_to_ply.py \
     --ckpt   /path/to/ckpt_40099_rank0.pt \
-    --output apartment_tour.ply
+    --output NeRF.ply
 
-The output format is binary PLY compatible with SPZ conversion.
+The output format matches your working PLY format exactly.
 """
 
 from __future__ import annotations
@@ -167,48 +167,29 @@ def _filter_smart_lod(splats: dict[str, torch.Tensor], target_percentage: float 
     return filtered_splats
 
 
-def _write_binary_ply_3dgs(out_path: Path, splats: dict[str, torch.Tensor]) -> None:
-    """Write PLY in GraphDeco 3DGS layout (binary_little_endian) compatible with SPZ conversion."""
+def _write_binary_ply_compatible(out_path: Path, splats: dict[str, torch.Tensor]) -> None:
+    """Write PLY in the EXACT format that matches your working model."""
     N = splats["means"].shape[0]
-    print(f"\n=== Converting {N:,} Gaussians to 3DGS PLY ===")
+    print(f"\n=== Converting {N:,} Gaussians to Compatible PLY ===")
     
-    # Prepare columns -----------------------------------------------------
+    # Positions
     xyz = splats["means"].cpu().numpy().astype("<f4")  # (N,3)
-
-    scales = torch.exp(splats["scales"]).cpu().numpy().astype("<f4")  # (N,3)
-
-    quats = splats["quats"].cpu().numpy().astype("<f4")  # (N,4)
     
-    # Normalize quaternions (essential for proper rotation)
-    quats = quats / np.linalg.norm(quats, axis=1, keepdims=True)
+    # CRITICAL: Use RAW scales (don't apply exp!) - keep in log space
+    scales = splats["scales"].cpu().numpy().astype("<f4")  # (N,3) - keep in log space!
     
-    # Handle quaternion format - your loader expects rot_1, rot_2, rot_3, rot_0 (x,y,z,w)
-    first_component_abs_mean = np.abs(quats[:, 0]).mean()
-    if first_component_abs_mean > 0.7:
-        # Likely (w,x,y,z) format - reorder to (x,y,z,w)
-        rot = quats[:, [1, 2, 3, 0]]
-        print("Quaternions detected as (w,x,y,z) - reordering to (x,y,z,w)")
-    else:
-        # Already (x,y,z,w) format
-        rot = quats
-        print("Quaternions detected as (x,y,z,w) - keeping order")
-
-    opacity = torch.sigmoid(splats["opacities"]).cpu().numpy().astype("<f4").reshape(N, 1)
-
-    # DC components (f_dc_0, f_dc_1, f_dc_2) - DO NOT multiply by SH_C0 here
-    # Let the loader handle SH coefficient processing
+    # Generate normal vectors (fake them - typically zeros are fine)
+    normals = np.zeros((N, 3), dtype="<f4")  # (N,3) - zeros work fine
+    
+    # Colors (DC coefficients) - DON'T multiply by SH_C0
     sh0 = splats["sh0"].squeeze(1).cpu().numpy().astype("<f4")  # (N,3)
-
-    # Higher order SH coefficients (f_rest_0 through f_rest_44)
-    shN = splats["shN"].cpu().numpy().astype("<f4")  # (N, 45) or (N, 15, 3)
     
-    # Ensure shN is properly shaped for the loader
+    # Higher order SH coefficients 
+    shN = splats["shN"].cpu().numpy().astype("<f4")
     if shN.ndim == 3:  # (N, 15, 3) format
         print("Reshaping SH coefficients from (N,15,3) to (N,45)")
-        # Reorganize from (N, 15, 3) to (N, 45) 
-        # The loader expects: [R_coeff_0...14, G_coeff_0...14, B_coeff_0...14]
         shN_reorganized = np.zeros((N, 45), dtype="<f4")
-        for c in range(3):  # For each color channel
+        for c in range(3):
             shN_reorganized[:, c*15:(c+1)*15] = shN[:, :, c]
         shN = shN_reorganized
     elif shN.shape[1] != 45:
@@ -220,14 +201,41 @@ def _write_binary_ply_3dgs(out_path: Path, splats: dict[str, torch.Tensor]) -> N
             # Pad with zeros if too few
             padding = np.zeros((N, 45 - shN.shape[1]), dtype="<f4")
             shN = np.concatenate([shN, padding], axis=1)
-
-    # Stack all fields in the exact order the loader expects
-    data = np.concatenate([xyz, scales, rot, opacity, sh0, shN], axis=1)
-
-    print(f"Final data shape: {data.shape} (expected: {N} x 59)")
-    assert data.shape[1] == 59, f"Expected 59 properties per vertex, got {data.shape[1]}"
-
-    # Header - EXACT field order that your loader expects
+    
+    # CRITICAL: Use RAW opacities (don't apply sigmoid!) - keep original values
+    opacity = splats["opacities"].cpu().numpy().astype("<f4").reshape(N, 1)  # Raw values!
+    
+    # Quaternions - normalize properly
+    quats = splats["quats"].cpu().numpy().astype("<f4")
+    quats = quats / np.linalg.norm(quats, axis=1, keepdims=True)
+    
+    # Handle quaternion format detection
+    first_component_abs_mean = np.abs(quats[:, 0]).mean()
+    if first_component_abs_mean > 0.7:
+        # Likely (w,x,y,z) format - reorder to (w,x,y,z) for good PLY format
+        rot = quats[:, [0, 1, 2, 3]]  # Keep as (w,x,y,z) = (rot_0, rot_1, rot_2, rot_3)
+        print("Quaternions detected as (w,x,y,z) - keeping order")
+    else:
+        # (x,y,z,w) format - reorder to (w,x,y,z) for good PLY format
+        rot = quats[:, [3, 0, 1, 2]]  # Reorder to (w,x,y,z)
+        print("Quaternions detected as (x,y,z,w) - reordering to (w,x,y,z)")
+    
+    # CRITICAL: Match the EXACT field order from good PLY
+    # Order: x,y,z, nx,ny,nz, f_dc_0,f_dc_1,f_dc_2, f_rest_0...f_rest_44, opacity, scale_0,scale_1,scale_2, rot_0,rot_1,rot_2,rot_3
+    data = np.concatenate([
+        xyz,           # x, y, z (3)
+        normals,       # nx, ny, nz (3)  
+        sh0,           # f_dc_0, f_dc_1, f_dc_2 (3)
+        shN,           # f_rest_0 through f_rest_44 (45)
+        opacity,       # opacity (1)
+        scales,        # scale_0, scale_1, scale_2 (3)
+        rot            # rot_0, rot_1, rot_2, rot_3 (4)
+    ], axis=1)
+    
+    print(f"Final data shape: {data.shape} (expected: {N} x 62)")
+    assert data.shape[1] == 62, f"Expected 62 properties, got {data.shape[1]}"
+    
+    # Header - EXACT field order from good PLY
     header_lines = [
         "ply",
         "format binary_little_endian 1.0",
@@ -235,35 +243,42 @@ def _write_binary_ply_3dgs(out_path: Path, splats: dict[str, torch.Tensor]) -> N
         "property float x",
         "property float y", 
         "property float z",
-        "property float scale_0",
-        "property float scale_1",
-        "property float scale_2",
-        "property float rot_1",     # x component
-        "property float rot_2",     # y component  
-        "property float rot_3",     # z component
-        "property float rot_0",     # w component
-        "property float opacity",
-        "property float f_dc_0",    # DC red
-        "property float f_dc_1",    # DC green
-        "property float f_dc_2",    # DC blue
+        "property float nx",      # Normal vectors
+        "property float ny",
+        "property float nz",
+        "property float f_dc_0",  # DC coefficients first
+        "property float f_dc_1",
+        "property float f_dc_2",
     ]
     
-    # Add f_rest_0 through f_rest_44 (higher order SH)
+    # f_rest_0 through f_rest_44
     header_lines += [f"property float f_rest_{i}" for i in range(45)]
+    
+    # Then opacity, scales, rotations
+    header_lines += [
+        "property float opacity",
+        "property float scale_0",
+        "property float scale_1", 
+        "property float scale_2",
+        "property float rot_0",    # w component
+        "property float rot_1",    # x component
+        "property float rot_2",    # y component
+        "property float rot_3"     # z component
+    ]
+    
     header_lines.append("end_header")
     header = "\n".join(header_lines) + "\n"
 
-    # Write the PLY file
     with out_path.open("wb") as f:
         f.write(header.encode("ascii"))
         f.write(data.tobytes())
 
-    print(f"Binary PLY written to {out_path} with {N:,} vertices.")
+    print(f"Compatible PLY written to {out_path} with {N:,} vertices.")
     print("=" * 45)
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Convert Difix3D GS checkpoint to binary PLY for real estate viewing")
+    parser = argparse.ArgumentParser(description="Convert Difix3D GS checkpoint to compatible PLY format")
     parser.add_argument("--ckpt", required=True, type=Path, help="Path to ckpt_*.pt file")
     parser.add_argument("--output", required=True, type=Path, help="Output .ply path")
     
@@ -298,7 +313,7 @@ def main(argv: list[str] | None = None) -> None:
         print("\nNo filtering applied - using full model")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    _write_binary_ply_3dgs(args.output, splats)
+    _write_binary_ply_compatible(args.output, splats)
 
 
 if __name__ == "__main__":
