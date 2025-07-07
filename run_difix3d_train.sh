@@ -10,7 +10,7 @@ set -euo pipefail
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
-DATA_DIR="/home/azureuser/datasets/colmap_processed"   # <- processed dataset
+DATA_DIR="~/datasets/colmap_processed"   # <- processed dataset
 RUN_NAME="difix3d_$(date +%Y%m%d_%H%M%S)"
 
 # downscale_factor selects which image resolution folder to load:
