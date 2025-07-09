@@ -103,6 +103,33 @@ def load_colmap_cam_centers(data_dir: Path):
     return centres
 
 
+def apply_transform(ckpt, scale, R, t, invert=False):
+    """Apply or invert the similarity to splat parameters inside ckpt."""
+    if invert:
+        # Use inverse similarity: x = (x - t)/s @ R
+        scale = 1.0 / scale
+        R = R.T
+        t = - (R @ t) * scale  # ensures x' = ((x - t_orig) / s) @ R
+    # Ensure dtype consistency
+    m = ckpt["splats"]["means"]
+    dtype = m.dtype
+    R_t = torch.tensor(R, dtype=dtype)
+    t_t = torch.tensor(t, dtype=dtype)
+    s_t = torch.tensor(scale, dtype=dtype)
+    ckpt["splats"]["means"] = (m @ R_t.T) * s_t + t_t
+    ckpt["splats"]["scales"] += torch.tensor(np.log(scale), dtype=ckpt["splats"]["scales"].dtype)
+    q = ckpt["splats"]["quats"]
+    qR = torch.tensor(Rs.from_matrix(R).as_quat(), dtype=q.dtype)
+    x1, y1, z1, w1 = qR
+    x2, y2, z2, w2 = q.T
+    qx = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    qy = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    qz = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+    qw = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    q_new = torch.stack([qx, qy, qz, qw], dim=1)
+    ckpt["splats"]["quats"] = q_new / torch.linalg.norm(q_new, dim=1, keepdim=True)
+
+
 def main(opt):
     ns_xyz, ns_ids = load_nerf_cam_centers(opt.transforms_json)
     cm_xyz = load_colmap_cam_centers(opt.colmap_dir)
@@ -133,29 +160,7 @@ def main(opt):
 
     ckpt = torch.load(opt.ckpt_in, map_location="cpu")
 
-    # Ensure computations stay in original dtype (usually float32)
-    m = ckpt["splats"]["means"]                 # (N,3) float32
-    dtype = m.dtype
-    R_t = torch.tensor(R, dtype=dtype)
-    t_t = torch.tensor(t, dtype=dtype)
-    s_t = torch.tensor(scale, dtype=dtype)
-
-    ckpt["splats"]["means"] = (m @ R_t.T) * s_t + t_t
-
-    # Scales (log-space) – add log(s) in same dtype
-    ckpt["splats"]["scales"] += torch.tensor(np.log(scale), dtype=ckpt["splats"]["scales"].dtype)
-
-    # Quaternions: rotate by R then renormalise
-    q = ckpt["splats"]["quats"]  # [N,4] (x,y,z,w)
-    qR = torch.tensor(Rs.from_matrix(R).as_quat(), dtype=q.dtype)  # (x,y,z,w)
-    x1, y1, z1, w1 = qR
-    x2, y2, z2, w2 = q.T
-    qx = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
-    qy = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
-    qz = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
-    qw = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
-    q_new = torch.stack([qx, qy, qz, qw], dim=1)
-    ckpt["splats"]["quats"] = q_new / torch.linalg.norm(q_new, dim=1, keepdim=True)
+    apply_transform(ckpt, scale, R, t, invert=opt.invert)
 
     torch.save(ckpt, opt.ckpt_out)
     print("Aligned checkpoint written to", opt.ckpt_out)
