@@ -1159,12 +1159,16 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
         ]
         for k in runner.splats.keys():
             data = torch.cat([ckpt["splats"][k] for ckpt in ckpts])
-            if k == "means" and cfg.normalize_world_space:
-                # parser.transform is a 4x4 numpy array
+            if cfg.normalize_world_space:
                 T = torch.from_numpy(runner.parser.transform).float().to(runner.device)
-                R = T[:3, :3]
-                t = T[:3, 3]
-                data = data @ R.T + t
+                if k == "means":
+                    R = T[:3, :3]
+                    t = T[:3, 3]
+                    data = data @ R.T + t
+                elif k == "scales":
+                    # Upper 3x3 contains uniform scale * rotation.
+                    scale_factor = torch.linalg.norm(T[0, :3])
+                    data = data + data.new_tensor(scale_factor).log()
             runner.splats[k].data = data
         step = ckpts[0]["step"]
         runner.train(step=step)

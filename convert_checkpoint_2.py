@@ -35,7 +35,8 @@ def convert_nerfstudio_to_gsplat(nerfstudio_ckpt_path: Path, output_path: Path) 
     opacities = pipeline_state["_model.gauss_params.opacities"]  # Already in logit space
 
     # Convert to Difix representation
-    scales_log = torch.log(torch.clamp(scales, min=EPS))  # log σ
+    # Splatfacto already stores scales in log-space (radius = exp(scale)).
+    scales_log = scales.clone()  # log σ
     # Opacities in Nesrfstudio checkpoints are already parameterised as logit (unbounded).
     # Keep them unchanged except for squeezing the trailing dim.
     opacities_logit = opacities.squeeze(-1)
@@ -78,3 +79,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
