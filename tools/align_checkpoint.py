@@ -172,4 +172,5 @@ if __name__ == "__main__":
     parser.add_argument("--colmap_dir", type=Path, required=True)
     parser.add_argument("--ckpt_in", type=Path, required=True)
     parser.add_argument("--ckpt_out", type=Path, required=True)
+    parser.add_argument("--invert", action="store_true", help="Apply inverse of solved similarity (Nerfstudio->COLMAP)")
     main(parser.parse_args())
