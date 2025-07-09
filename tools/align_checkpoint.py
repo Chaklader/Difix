@@ -133,17 +133,22 @@ def main(opt):
 
     ckpt = torch.load(opt.ckpt_in, map_location="cpu")
 
-    # Means
-    m = ckpt["splats"]["means"]
-    ckpt["splats"]["means"] = torch.from_numpy((m.numpy() @ R.T) * scale + t)
+    # Ensure computations stay in original dtype (usually float32)
+    m = ckpt["splats"]["means"]                 # (N,3) float32
+    dtype = m.dtype
+    R_t = torch.tensor(R, dtype=dtype)
+    t_t = torch.tensor(t, dtype=dtype)
+    s_t = torch.tensor(scale, dtype=dtype)
 
-    # Scales (log-space)
-    ckpt["splats"]["scales"] += np.log(scale)
+    ckpt["splats"]["means"] = (m @ R_t.T) * s_t + t_t
+
+    # Scales (log-space) – add log(s) in same dtype
+    ckpt["splats"]["scales"] += torch.tensor(np.log(scale), dtype=ckpt["splats"]["scales"].dtype)
 
     # Quaternions: rotate by R then renormalise
     q = ckpt["splats"]["quats"]  # [N,4] (x,y,z,w)
-    qR = Rs.from_matrix(R).as_quat()  # (x,y,z,w)
-    x1, y1, z1, w1 = torch.tensor(qR)
+    qR = torch.tensor(Rs.from_matrix(R).as_quat(), dtype=q.dtype)  # (x,y,z,w)
+    x1, y1, z1, w1 = qR
     x2, y2, z2, w2 = q.T
     qx = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
     qy = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
