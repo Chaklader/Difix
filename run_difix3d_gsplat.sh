@@ -4,14 +4,14 @@
 
 SCENE_ID="difix_debug"
 DATA_DIR="/home/azureuser/datasets/colmap_processed"
-CKPT_PATH="NeRF.pt"
+CKPT_PATH="NeRF_aligned.pt"
 OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/${SCENE_ID}"
 
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
     --data_dir "${DATA_DIR}" \
     --data_factor 1 \
     --result_dir "${OUTPUT_DIR}" \
-    --normalize-world-space \
+    --no-normalize-world-space \
     --test_every 8 \
     --max_steps 30020 \
     --eval_steps 30000 \
