@@ -30,10 +30,12 @@ import numpy as np
 import torch
 from scipy.spatial.transform import Rotation as Rs
 
-# Lazy import so that script runs even outside the project root
+# Lazily add project root to path so that imports in checkpoint dicts still work
 import sys
 sys.path.append(str(Path(__file__).resolve().parents[1]))  # project root
-from examples.gsplat.datasets.colmap import ColmapDataset  # noqa: E402
+
+from pycolmap import SceneManager
+import os
 
 
 def umeyama(src: np.ndarray, dst: np.ndarray, with_scale: bool = True):
@@ -78,8 +80,27 @@ def load_nerf_cam_centers(json_path: Path):
 
 
 def load_colmap_cam_centers(data_dir: Path):
-    ds = ColmapDataset(str(data_dir), split="train", num_rays=8)
-    return ds.camtoworlds.cpu().numpy()[:, :3, 3]  # (N,3)
+    """Return camera centres (world coordinate) as array shape (N_im, 3).
+    The function looks for COLMAP sparse dir at
+        data_dir/sparse/0  or  data_dir/colmap/sparse/0 .
+    """
+    colmap_dir = data_dir / "sparse/0"
+    if not colmap_dir.exists():
+        colmap_dir = data_dir / "colmap/sparse/0"
+    if not colmap_dir.exists():
+        raise FileNotFoundError(f"Could not find COLMAP sparse model under {data_dir}.")
+
+    mgr = SceneManager(str(colmap_dir))
+    mgr.load_images()
+
+    centres = {}
+    for im_id, im in mgr.images.items():
+        # Camera centre C = -R^T * t
+        R = im.R()
+        t = im.tvec
+        C = -R.T @ t
+        centres[im_id] = C.astype(np.float32)
+    return centres
 
 
 def main(opt):
@@ -87,15 +108,22 @@ def main(opt):
     cm_xyz = load_colmap_cam_centers(opt.colmap_dir)
 
     # Match by COLMAP image id if available, else by order intersection
-    if (ns_ids >= 0).all():
-        common_mask = (ns_ids < len(cm_xyz))
-        ns_xyz = ns_xyz[common_mask]
-        cm_xyz = cm_xyz[ns_ids[common_mask]]
+    if (ns_ids >= 0).any():
+        sel_src, sel_dst = [], []
+        for p, im_id in zip(ns_xyz, ns_ids):
+            if im_id in cm_xyz:
+                sel_src.append(p)
+                sel_dst.append(cm_xyz[im_id])
+        if len(sel_src) < 3:
+            raise RuntimeError("Too few matching image IDs between transforms.json and COLMAP.")
+        ns_xyz = np.stack(sel_src)
+        cm_xyz = np.stack(sel_dst)
     else:
-        # fallback: assume same ordering
-        min_len = min(len(ns_xyz), len(cm_xyz))
+        # Fallback: rely on ordering, take min length
+        cm_list = np.stack(list(cm_xyz.values()))
+        min_len = min(len(ns_xyz), len(cm_list))
         ns_xyz = ns_xyz[:min_len]
-        cm_xyz = cm_xyz[:min_len]
+        cm_xyz = cm_list[:min_len]
 
     src = ns_xyz.T  # 3xN
     dst = cm_xyz.T  # 3xN
