@@ -1164,7 +1164,8 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
                 if k == "means":
                     R = T[:3, :3]
                     t = T[:3, 3]
-                    data = data @ R.T + t
+                    scale_factor = torch.linalg.norm(T[0, :3])
+                    data = data @ R.T * scale_factor + t
                 elif k == "scales":
                     # Uniform scale component
                     scale_factor = torch.linalg.norm(T[0, :3])
