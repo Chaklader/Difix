@@ -1166,9 +1166,54 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
                     t = T[:3, 3]
                     data = data @ R.T + t
                 elif k == "scales":
-                    # Upper 3x3 contains uniform scale * rotation.
+                    # Uniform scale component
                     scale_factor = torch.linalg.norm(T[0, :3])
                     data = data + data.new_tensor(scale_factor).log()
+                elif k == "quats":
+                    # Rotate quaternion orientations by R
+                    R = T[:3, :3]
+                    # Convert R to quaternion (w,x,y,z)
+                    def rotmat_to_quat(m):
+                        t = m.trace()
+                        if t > 0:
+                            s = torch.sqrt(t + 1.0) * 2
+                            qw = 0.25 * s
+                            qx = (m[2, 1] - m[1, 2]) / s
+                            qy = (m[0, 2] - m[2, 0]) / s
+                            qz = (m[1, 0] - m[0, 1]) / s
+                        else:
+                            idx = torch.argmax(torch.tensor([m[0,0], m[1,1], m[2,2]]))
+                            if idx == 0:
+                                s = torch.sqrt(1.0 + m[0,0] - m[1,1] - m[2,2]) * 2
+                                qw = (m[2,1] - m[1,2]) / s
+                                qx = 0.25 * s
+                                qy = (m[0,1] + m[1,0]) / s
+                                qz = (m[0,2] + m[2,0]) / s
+                            elif idx == 1:
+                                s = torch.sqrt(1.0 + m[1,1] - m[0,0] - m[2,2]) * 2
+                                qw = (m[0,2] - m[2,0]) / s
+                                qx = (m[0,1] + m[1,0]) / s
+                                qy = 0.25 * s
+                                qz = (m[1,2] + m[2,1]) / s
+                            else:
+                                s = torch.sqrt(1.0 + m[2,2] - m[0,0] - m[1,1]) * 2
+                                qw = (m[1,0] - m[0,1]) / s
+                                qx = (m[0,2] + m[2,0]) / s
+                                qy = (m[1,2] + m[2,1]) / s
+                                qz = 0.25 * s
+                        return torch.stack([qx,qy,qz,qw])
+                    qR = rotmat_to_quat(R)
+                    # Normalize qR
+                    qR = qR / torch.linalg.norm(qR)
+                    # Quaternion multiply qR * q (broadcast)
+                    x1,y1,z1,w1 = qR
+                    x2,y2,z2,w2 = data.T
+                    qx = w1*x2 + x1*w2 + y1*z2 - z1*y2
+                    qy = w1*y2 - x1*z2 + y1*w2 + z1*x2
+                    qz = w1*z2 + x1*y2 - y1*x2 + z1*w2
+                    qw = w1*w2 - x1*x2 - y1*y2 - z1*z2
+                    data = torch.stack([qx,qy,qz,qw], dim=1)
+                    data = data / torch.linalg.norm(data, dim=1, keepdim=True)
             runner.splats[k].data = data
         step = ckpts[0]["step"]
         runner.train(step=step)
