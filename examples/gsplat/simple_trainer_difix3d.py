@@ -1158,7 +1158,14 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
             for file in cfg.ckpt
         ]
         for k in runner.splats.keys():
-            runner.splats[k].data = torch.cat([ckpt["splats"][k] for ckpt in ckpts])
+            data = torch.cat([ckpt["splats"][k] for ckpt in ckpts])
+            if k == "means" and cfg.normalize_world_space:
+                # parser.transform is a 4x4 numpy array
+                T = torch.from_numpy(runner.parser.transform).float().to(runner.device)
+                R = T[:3, :3]
+                t = T[:3, 3]
+                data = data @ R.T + t
+            runner.splats[k].data = data
         step = ckpts[0]["step"]
         runner.train(step=step)
     else:

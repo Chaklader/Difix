@@ -32,11 +32,13 @@ def convert_nerfstudio_to_gsplat(nerfstudio_ckpt_path: Path, output_path: Path) 
     quats = pipeline_state["_model.gauss_params.quats"]
     features_dc = pipeline_state["_model.gauss_params.features_dc"]  # [N,3]
     features_rest = pipeline_state["_model.gauss_params.features_rest"]  # [N,15,3]
-    opacities = pipeline_state["_model.gauss_params.opacities"]  # linear α ∈ [0,1]
+    opacities = pipeline_state["_model.gauss_params.opacities"]  # Already in logit space
 
     # Convert to Difix representation
     scales_log = torch.log(torch.clamp(scales, min=EPS))  # log σ
-    opacities_logit = torch.logit(torch.clamp(opacities.squeeze(-1), min=EPS, max=1 - EPS))  # logit α
+    # Opacities in Nesrfstudio checkpoints are already parameterised as logit (unbounded).
+    # Keep them unchanged except for squeezing the trailing dim.
+    opacities_logit = opacities.squeeze(-1)
 
     gsplat_ckpt = {
         "splats": {
