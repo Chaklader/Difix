@@ -23,7 +23,7 @@
 #                          images. 0 keeps full resolution, 1 halves it, 2
 #                          quarters it, etc. Default: 0.
 #
-# ./process_dataset.sh ~/datasets/colmap_workspace/images_clean ~/datasets/colmap_processed 0
+# ./process_dataset.sh ~/datasets/colmap_workspace/images ~/datasets/colmap_processed 0
 #
 # Notes:
 #   • The script forces Qt into off-screen mode (required on headless servers).
