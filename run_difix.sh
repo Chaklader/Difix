@@ -30,6 +30,9 @@ fi
 SCENE_ID="difix_sprint"
 DATA_DIR="/home/azureuser/datasets/colmap_processed"
 OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/${SCENE_ID}"
+
+# Limit DataLoader workers to reduce RAM usage
+export DIFIX_NUM_WORKERS=2
 mkdir -p "$OUTPUT_DIR"
 
 # Helper: current step stored in checkpoint

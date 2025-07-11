@@ -566,7 +566,7 @@ class Runner:
             self.trainset,
             batch_size=cfg.batch_size,
             shuffle=True,
-            num_workers=4,
+            num_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)),
             persistent_workers=True,
             pin_memory=True,
         )
@@ -927,7 +927,7 @@ class Runner:
             dataset,
             batch_size=self.cfg.batch_size,
             shuffle=True,
-            num_workers=4,
+            num_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)),
             persistent_workers=True,
             pin_memory=True,
         )
