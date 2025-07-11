@@ -39,13 +39,7 @@ if [[ ! -f "${OUTPUT_DIR}/ckpts/ckpt_comp_rank0.pt" ]]; then
   # one more** training iteration (step -> step+1). This ensures:
   #   1. The training loop executes once and triggers the PNG compression.
   #   2. A fresh checkpoint is saved (condition step==max_steps-1).
-  CKPT_STEP=$(python - <<'PY'
-import sys, torch, os
-ckpt=sys.argv[1]
-step=torch.load(ckpt, map_location='cpu').get('step',0)
-print(step)
-PY
- "${CKPT_INIT}")
+  CKPT_STEP=$(python -c 'import torch,sys; print(torch.load(sys.argv[1], map_location="cpu").get("step",0))' "${CKPT_INIT}")
   NEXT_STEP=$((CKPT_STEP + 1))
 
   CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
