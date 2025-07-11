@@ -272,8 +272,8 @@ def create_splats_with_optimizers(
         name: optimizer_class(
             [{"params": splats[name], "lr": lr * math.sqrt(BS), "name": name}],
             eps=1e-15 / math.sqrt(BS),
-            # TODO: check betas logic when BS is larger than 10 betas[0] will be zero.
-            betas=(1 - BS * (1 - 0.9), 1 - BS * (1 - 0.999)),
+            # Use standard Adam betas; scale via lr/eps instead of altering betas.
+            betas=(0.9, 0.999),
         )
         for name, _, lr in params
     }
