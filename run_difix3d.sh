@@ -35,15 +35,30 @@ latest_ckpt() {
 ########################################
 if [[ ! -f "${OUTPUT_DIR}/ckpts/ckpt_comp_rank0.pt" ]]; then
   echo "[Phase 0] Running PNG compression pass …"
+  # Figure out the step stored in the initial checkpoint so we can run **exactly
+  # one more** training iteration (step -> step+1). This ensures:
+  #   1. The training loop executes once and triggers the PNG compression.
+  #   2. A fresh checkpoint is saved (condition step==max_steps-1).
+  CKPT_STEP=$(python - <<'PY'
+import sys, torch, os
+ckpt=sys.argv[1]
+step=torch.load(ckpt, map_location='cpu').get('step',0)
+print(step)
+PY
+ "${CKPT_INIT}")
+  NEXT_STEP=$((CKPT_STEP + 1))
+
   CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
     --data_dir "${DATA_DIR}" \
     --result_dir "${OUTPUT_DIR}" \
     --compression png \
-    --max_steps 1 \
+    --max_steps "${NEXT_STEP}" \
+    --eval_steps "${NEXT_STEP}" \
     --ckpt "${CKPT_INIT}" \
     --no-normalize-world-space \
     --disable_viewer || true
-  # Rename the single-step checkpoint for clarity
+
+  # Rename the freshly saved compressed checkpoint for clarity
   mv "$(latest_ckpt)" "${OUTPUT_DIR}/ckpts/ckpt_comp_rank0.pt"
 fi
 CKPT_PATH="${OUTPUT_DIR}/ckpts/ckpt_comp_rank0.pt"
