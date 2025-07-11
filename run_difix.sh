@@ -62,7 +62,7 @@ if (( CKPT_STEP < 70000 )); then
     --batch_size 12 \
     --test_every 2 \
     --max_steps "$MAX2" \
-    --eval_steps "$MAX2" \
+    --eval_steps $(seq $((CKPT_STEP+5000)) 5000 $MAX2) \
     --disable_viewer
   CKPT_PATH=$(ls -1t "$OUTPUT_DIR"/ckpts/ckpt_*_rank0.pt | head -n1)
   CKPT_STEP=$(ckpt_step "$CKPT_PATH")
@@ -85,7 +85,7 @@ if (( CKPT_STEP < 90000 )); then
     --batch_size 8 \
     --test_every 2 \
     --max_steps "$MAX3" \
-    --eval_steps "$MAX3" \
+    --eval_steps $(seq $((CKPT_STEP+5000)) 5000 $MAX3) \
     --fix_steps "$MAX3" \
     --disable_viewer
 else
