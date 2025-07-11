@@ -58,9 +58,11 @@ fi
 CKPT_PATH="${OUTPUT_DIR}/ckpts/ckpt_comp_rank0.pt"
 
 ########################################
-# 1. Phase A – ¼-res (factor 4), batch 16, 15 k steps (≈1 h)
+# 1. Phase A – ¼-res (factor 4), batch 16, +15 k steps (≈1 h)
 ########################################
 echo "[Phase 1] Low-res fast shrink …"
+CKPT_STEP=$(python -c 'import torch,sys; print(torch.load(sys.argv[1], map_location="cpu").get("step",0))' "${CKPT_PATH}")
+MAX1=$((CKPT_STEP + 15000))
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
   --data_dir "${DATA_DIR}" \
   --result_dir "${OUTPUT_DIR}" \
@@ -69,8 +71,8 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
   --data_factor 4 \
   --batch_size 16 \
   --test_every 2 \
-  --max_steps 15000 \
-  --eval_steps 15000 \
+  --max_steps "${MAX1}" \
+  --eval_steps "${MAX1}" \
   --disable_viewer
 CKPT_PATH="$(latest_ckpt)"
 
@@ -78,6 +80,8 @@ CKPT_PATH="$(latest_ckpt)"
 # 2. Phase B – ½-res (factor 2), batch 12, +25 k steps (≈2.5 h)
 ########################################
 echo "[Phase 2] Mid-res refinement …"
+CKPT_STEP=$(python -c 'import torch,sys; print(torch.load(sys.argv[1], map_location="cpu").get("step",0))' "${CKPT_PATH}")
+MAX2=$((CKPT_STEP + 25000))
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
   --data_dir "${DATA_DIR}" \
   --result_dir "${OUTPUT_DIR}" \
@@ -86,15 +90,17 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
   --data_factor 2 \
   --batch_size 12 \
   --test_every 2 \
-  --max_steps 40000 \
-  --eval_steps 30000 40000 \
+  --max_steps "${MAX2}" \
+  --eval_steps "${MAX2}" \
   --disable_viewer
 CKPT_PATH="$(latest_ckpt)"
 
 ########################################
 # 3. Phase C – full-res (factor 1) polish, batch 8, +20 k steps + fixer (≈3.5 h)
 ########################################
-echo "[Phase 3] Half-res polish + fixer …"
+echo "[Phase 3] Full-res polish + fixer …"
+CKPT_STEP=$(python -c 'import torch,sys; print(torch.load(sys.argv[1], map_location="cpu").get("step",0))' "${CKPT_PATH}")
+MAX3=$((CKPT_STEP + 20000))
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
   --data_dir "${DATA_DIR}" \
   --result_dir "${OUTPUT_DIR}" \
@@ -103,9 +109,9 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
   --data_factor 1 \
   --batch_size 8 \
   --test_every 2 \
-  --max_steps 60000 \
-  --eval_steps 50000 60000 \
-  --fix_steps 60000 \
+  --max_steps "${MAX3}" \
+  --eval_steps "${MAX3}" \
+  --fix_steps "${MAX3}" \
   --disable_viewer
 
 echo "===== Sprint complete. Final checkpoint: $(latest_ckpt) ====="
