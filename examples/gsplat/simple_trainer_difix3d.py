@@ -568,7 +568,7 @@ class Runner:
             shuffle=True,
             num_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)),
             persistent_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)) > 0,
-            pin_memory=True,
+            pin_memory=int(os.getenv("DIFIX_PINMEMORY", "1")) > 0,
         )
         trainloader_iter = iter(trainloader)
 
@@ -929,7 +929,7 @@ class Runner:
             shuffle=True,
             num_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)),
             persistent_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)) > 0,
-            pin_memory=True,
+            pin_memory=int(os.getenv("DIFIX_PINMEMORY", "1")) > 0,
         )
         self.novelloaders.append(dataloader)
         self.novelloaders_iter.append(iter(dataloader))
