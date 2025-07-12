@@ -567,7 +567,7 @@ class Runner:
             batch_size=cfg.batch_size,
             shuffle=True,
             num_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)),
-            persistent_workers=True,
+            persistent_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)) > 0,
             pin_memory=True,
         )
         trainloader_iter = iter(trainloader)
@@ -928,7 +928,7 @@ class Runner:
             batch_size=self.cfg.batch_size,
             shuffle=True,
             num_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)),
-            persistent_workers=True,
+            persistent_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)) > 0,
             pin_memory=True,
         )
         self.novelloaders.append(dataloader)
