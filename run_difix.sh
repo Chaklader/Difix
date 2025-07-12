@@ -32,7 +32,9 @@ DATA_DIR="/home/azureuser/datasets/colmap_processed"
 OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/${SCENE_ID}"
 
 # Limit DataLoader workers to reduce RAM usage
-export DIFIX_NUM_WORKERS=2
+export DIFIX_NUM_WORKERS=0
+# Avoid pinning batches in RAM
+export DIFIX_PINMEMORY=0
 mkdir -p "$OUTPUT_DIR"
 
 # Helper: current step stored in checkpoint
@@ -59,7 +61,7 @@ if (( CKPT_STEP < 70000 )); then
     --ckpt "$CKPT_PATH" \
     --no-normalize-world-space \
     --data_factor 2 \
-    --batch_size 12 \
+    --batch_size 10 \
     --test_every 2 \
     --max_steps "$MAX2" \
     --eval_steps $(seq $((CKPT_STEP+5000)) 5000 $MAX2) \
@@ -82,7 +84,7 @@ if (( CKPT_STEP < 90000 )); then
     --ckpt "$CKPT_PATH" \
     --no-normalize-world-space \
     --data_factor 1 \
-    --batch_size 8 \
+    --batch_size 6 \
     --test_every 2 \
     --max_steps "$MAX3" \
     --eval_steps $(seq $((CKPT_STEP+5000)) 5000 $MAX3) \
