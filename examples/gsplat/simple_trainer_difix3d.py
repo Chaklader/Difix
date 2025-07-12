@@ -931,8 +931,13 @@ class Runner:
             persistent_workers=int(os.getenv("DIFIX_NUM_WORKERS", 4)) > 0,
             pin_memory=int(os.getenv("DIFIX_PINMEMORY", "1")) > 0,
         )
-        self.novelloaders.append(dataloader)
-        self.novelloaders_iter.append(iter(dataloader))
+
+        # self.novelloaders.append(dataloader)
+        # self.novelloaders_iter.append(iter(dataloader))
+
+        # Replace old novel dataloaders to release memory instead of accumulating
+        self.novelloaders = [dataloader]
+        self.novelloaders_iter = [iter(dataloader)]
 
         self.current_novel_poses = novel_poses
             
