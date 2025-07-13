@@ -9,12 +9,12 @@
 set -euo pipefail
 
 echo "[1/3] Converting PLY to SPZ…"
-python ../src/spz_converter.py
+python src/spz_converter.py
 
 echo "[2/3] Computing rotation matrix…"
-python ../src/rotation_corrction.py
+python src/rotation_corrction.py
 
 echo "[3/3] Generating boundary…"
-python ../src/boundary.py
+python src/boundary.py
 
 echo "✓ All steps completed. Output files are in the exports/ directory."
