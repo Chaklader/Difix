@@ -7,12 +7,12 @@ OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/difix3d_enhanced/${SCENE_ID}"
 # run_difix3d_train.sh  (only the argument lines changed)
 
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default \
-    --data-dir      "${DATA_DIR}" \
-    --data-factor   1 \
-    --batch-size    8 \
-    --result-dir    "${OUTPUT_DIR}" \
+    --data_dir "${DATA_DIR}" \
+    --data_factor 1 \
+    --batch_size 8 \
+    --result_dir "${OUTPUT_DIR}" \
     --no-normalize-world-space \
-    --test-every    2 \
-    --max-steps     5000 \
-    --eval-steps    2000 4000 5000 \
-    --ckpt          "${CKPT_PATH}" 
+    --test_every 2 \
+    --max_steps 5000 \
+    --eval_steps 2000 4000 5000 \
+    --ckpt "${CKPT_PATH}" 
