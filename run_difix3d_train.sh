@@ -4,14 +4,15 @@ DATA_DIR="/home/azureuser/datasets/colmap_processed"
 CKPT_PATH="NeRF.pt"
 OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/difix3d_enhanced/${SCENE_ID}"
 
-# Run Difix3D enhancement
+# run_difix3d_train.sh  (only the argument lines changed)
+
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default \
-    --data_dir "${DATA_DIR}" \
-    --data_factor 1 \
-    --batch_size 8 \
-    --result_dir "${OUTPUT_DIR}" \
+    --data-dir      "${DATA_DIR}" \
+    --data-factor   1 \
+    --batch-size    8 \
+    --result-dir    "${OUTPUT_DIR}" \
     --no-normalize-world-space \
-    --test_every 2 \
-    --max_steps 5000 \
-    --eval_steps 2000 4000 5000 \
-    --ckpt "${CKPT_PATH}"
+    --test-every    2 \
+    --max-steps     5000 \
+    --eval-steps    2000 4000 5000 \
+    --ckpt          "${CKPT_PATH}" 
