@@ -13,5 +13,5 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --no-normalize-world-space \
     --test_every 2 \
     --max_steps 5000 \
-    --eval_steps "[2000, 4000, 5000]" \
+    --eval_steps 2000 4000 5000 \
     --ckpt "${CKPT_PATH}"
