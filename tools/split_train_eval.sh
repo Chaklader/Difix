@@ -10,7 +10,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 IMG_DIR="$1"
-MODE="${2:-link}"   # default is symlink; use "move" to relocate files
+MODE="${2:-link}"   # modes: link (default, symlinks into train/eval), move (move files), suffix (rename in-place with _train/_eval suffix)
 cd "$IMG_DIR"
 
 # 1) create sub-directories if they do not exist
