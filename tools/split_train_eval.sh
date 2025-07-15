@@ -5,11 +5,12 @@
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 <images_dir>" >&2
+  echo "Usage: $0 <images_dir> [link|move]" >&2
   exit 1
 fi
 
 IMG_DIR="$1"
+MODE="${2:-link}"   # default is symlink; use "move" to relocate files
 cd "$IMG_DIR"
 
 # 1) create sub-directories if they do not exist
@@ -30,17 +31,25 @@ printf "%s\n" "${all_imgs[@]}" | shuf -n "$EVAL_N" > /tmp/eval_list.txt
 
 # 3) symlink the selected eval frames
 while read -r f; do
-  ln -s "../$f" "eval/$(basename "${f%.*}")_eval_${f##*_}" || true
+  if [[ "$MODE" == "move" ]]; then
+    mv "$f" "eval/$(basename "${f%.*}")_eval.${f##*.}"
+  else
+    ln -s "../$f" "eval/$(basename "${f%.*}")_eval.${f##*.}" || true
+  fi
 done < /tmp/eval_list.txt
 
 # 4) symlink the remaining frames into train
 for f in "${all_imgs[@]}"; do
   if ! grep -qx "$f" /tmp/eval_list.txt; then
-    ln -s "../$f" "train/$(basename "${f%.*}")_train_${f##*_}" || true
+    if [[ "$MODE" == "move" ]]; then
+      mv "$f" "train/$(basename "${f%.*}")_train.${f##*.}"
+    else
+      ln -s "../$f" "train/$(basename "${f%.*}")_train.${f##*.}" || true
+    fi
   fi
 done
 
 TRAIN_N=$(( TOTAL - EVAL_N ))
 rm /tmp/eval_list.txt
 
-echo "Created $TRAIN_N train and $EVAL_N eval symlinks inside $IMG_DIR/{train,eval}"
+echo "Created $TRAIN_N train and $EVAL_N eval files inside $IMG_DIR/{train,eval} using $MODE mode"
