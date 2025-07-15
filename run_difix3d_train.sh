@@ -9,7 +9,7 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --batch_size 8 \
     --result_dir "${OUTPUT_DIR}" \
     --no-normalize-world-space \
-    --test_every 2 \
+    --test_every 1 \
     --max_steps 35500 \
     --eval_steps 32100 34100 35100 \
     --save_steps 32100 34100 35100 \
