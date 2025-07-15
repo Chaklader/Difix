@@ -15,11 +15,13 @@ cd "$IMG_DIR"
 # 1) create sub-directories if they do not exist
 mkdir -p train eval
 
-# 2) count images and pick 10 % for eval
-mapfile -t all_imgs < <(ls -1 *.png)
+# 2) collect image list (png / jpg / jpeg) and pick 10 % for eval
+shopt -s nullglob
+mapfile -t all_imgs < <(ls -1 *.png *.jpg *.jpeg 2>/dev/null)
+shopt -u nullglob
 TOTAL=${#all_imgs[@]}
 if [[ $TOTAL -eq 0 ]]; then
-  echo "No .png images found in $IMG_DIR" >&2
+  echo "No .png/.jpg images found in $IMG_DIR" >&2
   exit 1
 fi
 EVAL_N=$(( TOTAL / 10 ))
