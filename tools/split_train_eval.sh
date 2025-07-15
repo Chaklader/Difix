@@ -32,9 +32,9 @@ printf "%s\n" "${all_imgs[@]}" | shuf -n "$EVAL_N" > /tmp/eval_list.txt
 # 3) symlink the selected eval frames
 while read -r f; do
   if [[ "$MODE" == "move" ]]; then
-    mv "$f" "eval/$(basename "${f%.*}")_eval.${f##*.}"
+    mv "$f" "eval/$f"
   else
-    ln -s "../$f" "eval/$(basename "${f%.*}")_eval.${f##*.}" || true
+    ln -s "../$f" "eval/$f" || true
   fi
 done < /tmp/eval_list.txt
 
@@ -42,9 +42,9 @@ done < /tmp/eval_list.txt
 for f in "${all_imgs[@]}"; do
   if ! grep -qx "$f" /tmp/eval_list.txt; then
     if [[ "$MODE" == "move" ]]; then
-      mv "$f" "train/$(basename "${f%.*}")_train.${f##*.}"
+      mv "$f" "train/$f"
     else
-      ln -s "../$f" "train/$(basename "${f%.*}")_train.${f##*.}" || true
+      ln -s "../$f" "train/$f" || true
     fi
   fi
 done
@@ -52,4 +52,4 @@ done
 TRAIN_N=$(( TOTAL - EVAL_N ))
 rm /tmp/eval_list.txt
 
-echo "Created $TRAIN_N train and $EVAL_N eval files inside $IMG_DIR/{train,eval} using $MODE mode"
+echo "Created $TRAIN_N train and $EVAL_N eval splits inside $IMG_DIR/{train,eval} using $MODE mode (filenames unchanged)"
