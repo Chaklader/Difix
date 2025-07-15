@@ -31,6 +31,10 @@ printf "%s\n" "${all_imgs[@]}" | shuf -n "$EVAL_N" > /tmp/eval_list.txt
 
 # 3) symlink the selected eval frames
 while read -r f; do
+  # Skip directories just in case
+  if [[ -d "$f" ]]; then
+    continue
+  fi
   if [[ "$MODE" == "move" ]]; then
     mv "$f" "eval/$f"
   else
@@ -40,6 +44,7 @@ done < /tmp/eval_list.txt
 
 # 4) symlink the remaining frames into train
 for f in "${all_imgs[@]}"; do
+  [[ -d "$f" ]] && continue
   if ! grep -qx "$f" /tmp/eval_list.txt; then
     if [[ "$MODE" == "move" ]]; then
       mv "$f" "train/$f"
