@@ -343,9 +343,12 @@ class Dataset:
             self.indices = indices
         else:
             if split == "train":
-                self.indices = indices[indices % self.parser.test_every == 0]
-            else:
+                # Invert logic so that the majority of images (indices not divisible
+                # by test_every) are used for training and the periodic frames are
+                # reserved for evaluation.
                 self.indices = indices[indices % self.parser.test_every != 0]
+            else:
+                self.indices = indices[indices % self.parser.test_every == 0]
 
     def __len__(self):
         return len(self.indices)
