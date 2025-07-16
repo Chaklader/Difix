@@ -17,10 +17,10 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --data_dir "${DATA_DIR}" \
     --no-normalize-world-space \
     --result_dir "${OUTPUT_DIR}" \
-    --max_steps 3 \
-    --eval_steps 2 \
+    --max_steps 30002 \
+    --eval_steps 30001 \
     --save_steps 999999 \
-    --fix_steps 2 \
+    --fix_steps 30000 \
     --render_traj_path spiral
 
 echo "Novel view rendering completed"
