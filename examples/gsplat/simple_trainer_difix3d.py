@@ -115,7 +115,7 @@ class Config:
     # Weight for iterative 3d update
     novel_data_lambda: float = 0.3
     # Enforce a minimum log-scale for rendering to prevent splats from being invisible.
-    min_render_scale: float = -4.0
+    min_render_scale: float = -2.0
 
     # Near plane clipping distance
     near_plane: float = 0.01
