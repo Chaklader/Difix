@@ -477,10 +477,11 @@ class Runner:
     ) -> Tuple[Tensor, Tensor, Dict]:
         means = self.splats["means"]  # [N, 3]
         quats = self.splats["quats"]  # [N, 4]
-        scales = torch.exp(self.splats["scales"])  # [N, 3]
         
-        # --- DEBUGGING: Force opacities to be high to check geometry ---
-        opacities = torch.ones_like(self.splats["opacities"]) * 0.99
+        # --- DEBUGGING: Force scales to be large to check geometry ---
+        scales = torch.ones_like(self.splats["scales"]) * -2.0
+
+        opacities = torch.sigmoid(self.splats["opacities"])  # [N,]
 
         image_ids = kwargs.pop("image_ids", None)
         if self.cfg.app_opt:
