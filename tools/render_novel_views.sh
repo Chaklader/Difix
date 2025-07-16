@@ -21,7 +21,8 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --eval_steps 30001 \
     --save_steps 999999 \
     --fix_steps 30000 \
-    --render_traj_path interp
+    --render_traj_path interp \
+    --random_bkgd
 
 echo "Novel view rendering completed"
 echo "Rendered images saved to: ${OUTPUT_DIR}/renders/"
