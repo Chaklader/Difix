@@ -15,14 +15,13 @@ echo "Output directory: ${OUTPUT_DIR}"
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default \
     --ckpt "${CKPT_PATH}" \
     --data_dir "${DATA_DIR}" \
-    --no-normalize-world-space \
+    --checkpoint_is_normalized \
     --result_dir "${OUTPUT_DIR}" \
     --max_steps 30002 \
     --eval_steps 30001 \
     --save_steps 999999 \
     --fix_steps 30000 \
-    --render_traj_path interp \
-    --random_bkgd
+    --render_traj_path interp 
 
 echo "Novel view rendering completed"
 echo "Rendered images saved to: ${OUTPUT_DIR}/renders/"

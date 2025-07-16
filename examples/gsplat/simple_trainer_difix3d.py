@@ -74,6 +74,8 @@ class Config:
     global_scale: float = 1.0
     # Normalize the world space
     normalize_world_space: bool = True
+    # If the checkpoint is already in a normalized world space, set this to True.
+    checkpoint_is_normalized: bool = False
     # Camera model
     camera_model: Literal["pinhole", "ortho", "fisheye"] = "pinhole"
 
@@ -1165,7 +1167,7 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
         ]
         for k in runner.splats.keys():
             data = torch.cat([ckpt["splats"][k] for ckpt in ckpts])
-            if cfg.normalize_world_space:
+            if cfg.normalize_world_space and not cfg.checkpoint_is_normalized:
                 T = torch.from_numpy(runner.parser.transform).float().to(runner.device)
                 if k == "means":
                     R = T[:3, :3]
