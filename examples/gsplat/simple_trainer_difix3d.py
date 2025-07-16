@@ -114,6 +114,8 @@ class Config:
     ssim_lambda: float = 0.2
     # Weight for iterative 3d update
     novel_data_lambda: float = 0.3
+    # Enforce a minimum log-scale for rendering to prevent splats from being invisible.
+    min_render_scale: float = -4.0
 
     # Near plane clipping distance
     near_plane: float = 0.01
@@ -477,7 +479,10 @@ class Runner:
     ) -> Tuple[Tensor, Tensor, Dict]:
         means = self.splats["means"]  # [N, 3]
         quats = self.splats["quats"]  # [N, 4]
-        scales = torch.exp(self.splats["scales"])  # [N, 3]
+        
+        scales_log = torch.clamp(self.splats["scales"], max=self.cfg.min_render_scale)
+        scales = torch.exp(scales_log)
+
         opacities = torch.sigmoid(self.splats["opacities"])  # [N,]
 
         image_ids = kwargs.pop("image_ids", None)
