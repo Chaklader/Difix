@@ -1041,8 +1041,8 @@ class Runner:
         device = self.device
 
         if camtoworlds_all is None:
-            # camtoworlds_all = self.parser.camtoworlds[5:-5]
-            camtoworlds_all = self.valset.camtoworlds
+            camtoworlds_all = self.parser.camtoworlds[5:-5]
+            # camtoworlds_all = self.valset.camtoworlds
             if cfg.render_traj_path == "interp":
                 camtoworlds_all = generate_interpolated_path(
                     camtoworlds_all, 1
