@@ -1096,6 +1096,10 @@ class Runner:
 
             for j in range(renders.shape[0]):
                 colors = torch.clamp(renders[j, ..., 0:3], 0.0, 1.0)  # [H, W, 3]
+
+                # --- DEBUGGING: Override color with alpha to check for geometry ---
+                colors = alphas[j].repeat(1, 1, 3)
+
                 depths = renders[j, ..., 3:4]  # [H, W, 1]
                 depths = (depths - depths.min()) / (depths.max() - depths.min())
                 
