@@ -20,7 +20,7 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --max_steps 2 \
     --eval_steps 1 \
     --save_steps 999999 \
-    --fix_steps 999999 \
+    --fix_steps 1 \
     --render_traj_path spiral
 
 echo "Novel view rendering completed"
