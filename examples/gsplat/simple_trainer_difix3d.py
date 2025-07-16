@@ -480,7 +480,7 @@ class Runner:
         means = self.splats["means"]  # [N, 3]
         quats = self.splats["quats"]  # [N, 4]
         
-        scales_log = torch.clamp(self.splats["scales"], max=self.cfg.min_render_scale)
+        scales_log = torch.clamp(self.splats["scales"], min=self.cfg.min_render_scale)
         scales = torch.exp(scales_log)
 
         opacities = torch.sigmoid(self.splats["opacities"])  # [N,]
