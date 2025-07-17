@@ -34,8 +34,8 @@ python examples/gsplat/simple_trainer_difix3d.py default \
     --no-normalize-world-space \  # checkpoint already aligned – change if.unaligned
     --render_only \                # skip optimiser entirely
     --render_traj_path "${TRAJ}" \
-    --max_steps 1 \                # single dummy step
-    --eval_steps 1 \
+    --max_steps 30002 \                # single dummy step
+    --eval_steps 30001 \
     --save_steps 999999 \
     --fix_steps 999999 \
     --result_dir "${OUTPUT_DIR}"
