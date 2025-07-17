@@ -17,9 +17,9 @@
 set -euo pipefail
 
 # -------- USER CONFIG --------------------------------------------------------
-SCENE_ID="difix3d_novel_renders_$(date +%Y%m%d_%H%M%S)"   # folder tag
+SCENE_ID="difix3d_novel_renders_synthetic"   # folder tag
 DATA_DIR="/home/azureuser/datasets/colmap_processed"      # original dataset
-CKPT_PATH="NeRF_aligned.pt"                               # GSplat checkpoint
+CKPT_PATH="NeRF.pt"                               # GSplat checkpoint
 TRAJ="spiral"                                             # spiral | interp | ellipse
 
 # Where to write renders
