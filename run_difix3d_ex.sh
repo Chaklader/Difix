@@ -1,9 +1,9 @@
 SCENE_ID="difix3d_2025_07_14"
 DATA_DIR="/home/azureuser/datasets/colmap_processed"
-CKPT_PATH="NeRF_unaligned.pt"
+CKPT_PATH="NeRF.pt"
 OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/difix3d_enhanced/${SCENE_ID}"
 
-CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default \
+CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
     --data_dir "${DATA_DIR}" \
     --data_factor 1 \
     --batch_size 8 \
@@ -14,7 +14,11 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --eval_steps 31999 \
     --save_steps 31999 \
     --fix_steps 31800 \
-    --ckpt "${CKPT_PATH}"
+    --ckpt "${CKPT_PATH}" \
+    --opacity_reg 0.01 \
+    --scale_reg 1e-4 \
+    --near_plane 0.05 \
+    --random_bkgd
 
 echo "Difix3D training completed for 32.000 steps"
 
