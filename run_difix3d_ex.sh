@@ -15,9 +15,9 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default 
     --save_steps 31999 \
     --fix_steps 31800 \
     --ckpt "${CKPT_PATH}" \
-    --opacity_reg 0.01 \
+    --opacity_reg 0.05 \
     --scale_reg 0.001 \
-    --random_bkgd
+    --strategy.refine_every 1000
 
 echo "Difix3D training completed for 32.000 steps"
 
