@@ -31,8 +31,7 @@ CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0} \
 python examples/gsplat/simple_trainer_difix3d.py default \
     --data_dir "${DATA_DIR}" \
     --ckpt "${CKPT_PATH}" \
-    --no-normalize-world-space \  # checkpoint already aligned – change if.unaligned
-    --render_only \                # skip optimiser entirely
+    --no-normalize-world-space \  # checkpoint already aligned – remove if CKPT is unaligned
     --render_traj_path "${TRAJ}" \
     --max_steps 30002 \                # single dummy step
     --eval_steps 30001 \

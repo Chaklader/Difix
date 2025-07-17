@@ -8,7 +8,7 @@ CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py mcmc \
     --data_factor 1 \
     --batch_size 8 \
     --result_dir "${OUTPUT_DIR}" \
-    --normalize-world-space \
+    --no-normalize-world-space \
     --test_every 10 \
     --max_steps 32000 \
     --eval_steps 31999 \
