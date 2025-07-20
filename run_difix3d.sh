@@ -52,7 +52,4 @@ ns-train difix3d \
     --eval_mode fraction \
     --train_split_fraction 0.9
 
-# -----------------------------------------------------------------------------
-# The script ends here.  After training finishes you will find the finetuned
-# checkpoint under ${OUTPUT_DIR}.
-# ----------------------------------------------------------------------------- 
+echo "Difix3D training completed for 30,000 steps"
