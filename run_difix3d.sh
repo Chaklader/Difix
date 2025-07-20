@@ -49,7 +49,7 @@ ns-train difix3d \
     --center_method none \
     --auto-scale-poses False \
     --downscale_factor "${DATA_FACTOR}" \
-    --eval_mode filename
+    --eval_mode ratio --train_split_fraction 0.9
 
 # -----------------------------------------------------------------------------
 # The script ends here.  After training finishes you will find the finetuned
