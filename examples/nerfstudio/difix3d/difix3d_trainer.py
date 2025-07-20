@@ -109,3 +109,40 @@ class Difix3DTrainer(Trainer):
         )
         writer.put_config(name="config", config_dict=dataclasses.asdict(self.config), step=0)
         profiler.setup_profiler(self.config.logging, writer_log_path)
+
+    # ------------------------------------------------------------------
+    # Override checkpoint loading so that missing optimizer state in a
+    # Nerfstudio checkpoint (e.g. weights-only ckpt) does NOT crash.
+    # ------------------------------------------------------------------
+    # This is patch used by @AREF to load checkpoint from Difix3D
+    def _load_checkpoint(self):  # noqa: D401  (keep same name as base class)
+        """Load model weights from `--load-checkpoint` but tolerate checkpoints
+        that do not contain an `optimizers` entry. This happens for many
+        published Nerfstudio ckpts which store only the pipeline weights.
+        """
+        import torch
+        from pathlib import Path
+
+        if self.config.load_checkpoint is None:
+            return  # nothing to load
+
+        ckpt_path = Path(self.config.load_checkpoint)
+        if not ckpt_path.exists():
+            raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
+
+        print(f"[Difix3DTrainer] Loading checkpoint (weights only tolerated): {ckpt_path}")
+        loaded_state = torch.load(ckpt_path, map_location="cpu")
+
+        # Always load the pipeline / model weights
+        if "pipeline" in loaded_state:
+            self.pipeline.load_pipeline(loaded_state["pipeline"], loaded_state.get("step", None))
+
+        # Try to load optimizer state but ignore if keys mismatch or missing
+        try:
+            if "optimizers" in loaded_state:
+                self.optimizers.load_optimizers(loaded_state["optimizers"])
+        except (KeyError, RuntimeError) as err:
+            print(
+                f"[Difix3DTrainer] Warning: skipped loading optimizer state from checkpoint: {err}\n"
+                " Training will proceed with freshly initialised optimizers."
+            )
