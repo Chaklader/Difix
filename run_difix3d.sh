@@ -38,7 +38,6 @@ ns-train difix3d \
     --output_dir "${OUTPUT_DIR}" \
     --experiment_name "${SCENE_ID}" \
     --load-checkpoint "${CKPT_PATH}" \
-    --load_optimizer_state False \
     --max_num_iterations 30000 \
     --steps_per_eval_all_images 0 \
     --steps_per_eval_batch 0 \
