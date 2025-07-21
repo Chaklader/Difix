@@ -42,11 +42,11 @@ ns-train difix3d \
     --experiment_name "${SCENE_ID}" \
     --timestamp '' \
     --load-checkpoint "${CKPT_PATH}" \
-    --max_num_iterations 30000 \
+    --max_num_iterations 10000 \
     --steps_per_eval_all_images 0 \
     --steps_per_eval_batch 0 \
     --steps_per_eval_image 0 \
-    --steps_per_save 200 \
+    --steps_per_save 10000 \
     --viewer.quit-on-train-completion True \
     nerfstudio-data \
     --downscale_factor "${DATA_FACTOR}" \
