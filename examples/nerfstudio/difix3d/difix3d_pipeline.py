@@ -175,7 +175,7 @@ class Difix3DPipeline(VanillaPipeline):
         for i in tqdm.trange(0, len(novel_poses), desc="Fixing artifacts..."):
             image = Image.open(f"{self.render_dir}/novel/{step}/Pred/{i:04d}.png").convert("RGB")
             ref_image = Image.open(ref_image_filenames[i]).convert("RGB")
-            width, height = (1024, 576) if image.size[0] > image.size[1] else (576, 1024)
+            width, height = (1024, 512) if image.size[0] > image.size[1] else (512, 1024)
             output_image = self.difix(prompt="remove degradation", image=image, ref_image=ref_image, width=width, height=height, num_inference_steps=1, timesteps=[199], guidance_scale=0.0).images[0]
             os.makedirs(f"{self.render_dir}/novel/{step}/Fixed", exist_ok=True)
             output_image.save(f"{self.render_dir}/novel/{step}/Fixed/{i:04d}.png")
