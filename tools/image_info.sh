@@ -25,7 +25,35 @@ printf "Analyzing %s (divisor=%s)\n" "$IMAGES_DIR" "$DIVISOR"
 printf "%-24s | %6s | %6s | %s\n" "Filename" "Width" "Height" "OK?"
 printf -- "---------------------------------------------------------------\n"
 
-total=0; bad=0
+# ---------- use Python (Pillow) for broader compatibility ----------
+python - <<'PY' "$IMAGES_DIR" "$DIVISOR"
+import sys, pathlib, json
+from PIL import Image
+
+root = pathlib.Path(sys.argv[1])
+mod = int(sys.argv[2])
+print(f"Analyzing {root} (divisor={mod})")
+print(f"{'Filename':24} | {'Width':6} | {'Height':6} | OK?")
+print("-"*63)
+
+total = bad = 0
+for img in sorted(root.glob('*')):
+    if img.suffix.lower() not in {'.jpg', '.jpeg', '.png'}:
+        continue
+    total += 1
+    try:
+        w, h = Image.open(img).size
+    except Exception as e:
+        print(f"{img.name:24} |  error opening: {e}")
+        bad += 1
+        continue
+    ok = (w % mod == 0 and h % mod == 0)
+    print(f"{img.name:24} | {w:6d} | {h:6d} | {'yes' if ok else 'NO'}")
+    if not ok:
+        bad += 1
+print(f"\nSummary: {total} files  |  {bad} NOT divisible by {mod}")
+PY
+exit 0
 for img in "$IMAGES_DIR"/*.{jpg,jpeg,png,JPG,JPEG,PNG}; do
   [[ -f $img ]] || continue  # skip if glob didn't expand
   (( total++ ))
