@@ -26,17 +26,17 @@ printf "%-24s | %6s | %6s | %s\n" "Filename" "Width" "Height" "OK?"
 printf -- "---------------------------------------------------------------\n"
 
 total=0; bad=0
-while IFS= read -r -d '' img; do
+for img in "$IMAGES_DIR"/*.{jpg,jpeg,png,JPG,JPEG,PNG}; do
+  [[ -f $img ]] || continue  # skip if glob didn't expand
   (( total++ ))
   read -r w h <<< "$(identify -format '%w %h' "$img")"
   fname=$(basename "$img")
   if (( w % DIVISOR == 0 && h % DIVISOR == 0 )); then
     status="yes"
   else
-    status="NO"
-    (( bad++ ))
+    status="NO"; (( bad++ ))
   fi
   printf "%-24s | %6d | %6d | %s\n" "$fname" "$w" "$h" "$status"
-done < <(find "$IMAGES_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \) -print0)
+done
 
 printf "\nSummary: %d files  |  %d NOT divisible by %s\n" "$total" "$bad" "$DIVISOR"
