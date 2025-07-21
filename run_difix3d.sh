@@ -41,16 +41,13 @@ ns-train difix3d \
     --output_dir "${OUTPUT_DIR}" \
     --experiment_name "${SCENE_ID}" \
     --load-checkpoint "${CKPT_PATH}" \
-    --max_num_iterations 200 \
+    --max_num_iterations 30000 \
     --steps_per_eval_all_images 0 \
     --steps_per_eval_batch 0 \
     --steps_per_eval_image 0 \
     --steps_per_save 200 \
     --viewer.quit-on-train-completion True \
     nerfstudio-data \
-    --orientation-method none \
-    --center_method none \
-    --auto-scale-poses False \
     --downscale_factor "${DATA_FACTOR}" \
     --eval_mode fraction \
     --train_split_fraction 0.9

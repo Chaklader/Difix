@@ -67,11 +67,6 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 #   --output-path eval_results
 # ns-eval --load-config outputs/difix3d_20250626_073554/difix3d/config.yml  --output-path eval_results
 
-# ns-export gaussian-splat \
-#   --load-config outputs/difix3d_20250627_174106/splatfacto/2025-06-27_174113/config.yml \
-#   --output-dir exports/gaussian_splat/ \
-#   --output-filename Nerf.ply
-
 # PLY location on A100 box
 # /home/azureuser/github/Difix3D/exports/gaussian_splat/Nerf.ply
 
@@ -127,6 +122,11 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 # **FPS: 5.9 (±0.85)**
 # - Rendering speed in frames per second
 # - Depends on resolution and hardware
+
+ns-export pointcloud \
+  --load-config /mnt/nvme0n1/azureuser/finetune/difix3d_2025_07_21/difix3d_2025_07_21/difix3d/2025-07-21_134031/config.yml \
+  --output-dir assets/ \
+  --output-filename NeRF.ply
 
 # ## Summary:
 # Your model has **good visual quality** (high SSIM) with **moderate pixel accuracy** (PSNR). It renders **very fast** 
