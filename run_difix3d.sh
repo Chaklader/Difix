@@ -28,6 +28,9 @@ if [[ ! -d "${DATA}" ]]; then
 fi
 
 # ------------------------------ launch ---------------------------------------
+# Set CUDA memory management to avoid fragmentation
+export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+
 CUDA_VISIBLE_DEVICES=0 \
 ns-train difix3d \
     --data "${DATA}" \

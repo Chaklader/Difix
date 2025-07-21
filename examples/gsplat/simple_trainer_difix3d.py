@@ -877,12 +877,31 @@ class Runner:
             ref_image_paths = [self.parser.image_paths[i] for i in np.array(self.trainset.indices)[ref_image_indices]]
         assert len(image_paths) == len(ref_image_paths) == len(novel_poses)
 
+        """
+            VAE Target Resolution Options:
+            
+            Conservative (lower memory usage):
+            - 1024: Very safe, minimal memory usage
+            - 1280: Still conservative
+            - 1536: Moderate quality/memory balance
+            
+            Moderate (balanced):
+            - 1792: Good balance
+            - 2048: Standard high resolution
+            - 2304: Higher quality
+            
+            Aggressive (higher memory usage):
+            - 2400: Higher quality but more memory
+            - 2560: Very high quality
+            - 2688: Original setting (caused OOM)
+            - 2816: Very high quality, risky for memory
+        """
         for i in tqdm.trange(0, len(novel_poses), desc="Fixing artifacts..."):
             image = Image.open(image_paths[i]).convert("RGB")
             ref_image = Image.open(ref_image_paths[i]).convert("RGB")
             # Ensure dimensions are divisible by 8 for VAE compatibility
             # --- downscale images to a VAE-friendly size to avoid OOM ---
-            TARGET = 2688  # max side length fed to Difix VAE
+            TARGET = 2048  # max side length fed to Difix VAE
             long_side = max(image.width, image.height)
             if long_side > TARGET:
                 scale = TARGET / long_side
