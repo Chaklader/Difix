@@ -161,6 +161,17 @@ class Difix3DPipeline(VanillaPipeline):
 
         self.render_traj(step, cameras)
 
+        # -------------------------------------------------------------
+        # Patch: enable low-memory diffusion fixer
+        # Purpose: prevent 52 GiB CUDA OOM by tiling the VAE decode and
+        # running the entire pipeline in fp16. Also free any leftover
+        # training tensors before starting the fixer loop.
+        # -------------------------------------------------------------
+        import torch
+        torch.cuda.empty_cache()
+        self.difix.enable_vae_tiling()  # decode in 64×64 tiles
+        self.difix.to(dtype=torch.float16)
+
         image_filenames = []
         for i in tqdm.trange(0, len(novel_poses), desc="Fixing artifacts..."):
             image = Image.open(f"{self.render_dir}/novel/{step}/Pred/{i:04d}.png").convert("RGB")
