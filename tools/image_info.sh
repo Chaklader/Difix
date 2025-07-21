@@ -17,7 +17,7 @@ DIVISOR="${2:-8}"
 
 printf "Analyzing images in %s (divisor=%s)\n" "$IMAGES_DIR" "$DIVISOR"
 printf "Filename |  W  |  H  | multiple-of-%s?\n" "$DIVISOR"
-printf "-------------------------------------------\n"
+printf -- "-------------------------------------------\n"
 
 # enable better globbing
 shopt -s nullglob nocaseglob extglob
