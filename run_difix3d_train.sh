@@ -1,7 +1,7 @@
-SCENE_ID="difix3d_2025_07_14"
-DATA_DIR="/home/azureuser/datasets/colmap_processed"
+SCENE_ID="charles_difix3d_2025_07_21"
+DATA_DIR="/home/azureuser/datasets/colmap_processed_charles"
 CKPT_PATH="NeRF.pt"
-OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune/difix3d_enhanced/${SCENE_ID}"
+OUTPUT_DIR="/mnt/nvme0n1/azureuser/finetune_charles/difix3d_enhanced/${SCENE_ID}"
 
 CUDA_VISIBLE_DEVICES=0 python examples/gsplat/simple_trainer_difix3d.py default \
     --data_dir "${DATA_DIR}" \
