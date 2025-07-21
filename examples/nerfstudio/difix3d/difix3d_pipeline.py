@@ -168,7 +168,7 @@ class Difix3DPipeline(VanillaPipeline):
         # training tensors before starting the fixer loop.
         # -------------------------------------------------------------
         torch.cuda.empty_cache()
-        self.difix.enable_vae_tiling()  # decode in 64×64 tiles
+        # self.difix.enable_vae_tiling()  # disabled: tiling caused tensor shape mismatch
         self.difix.to(dtype=torch.float16)
 
         image_filenames = []
