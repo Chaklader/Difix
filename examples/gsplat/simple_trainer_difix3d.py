@@ -901,7 +901,7 @@ class Runner:
             ref_image = Image.open(ref_image_paths[i]).convert("RGB")
             # Ensure dimensions are divisible by 8 for VAE compatibility
             # --- downscale images to a VAE-friendly size to avoid OOM ---
-            TARGET = 1536  # max side length fed to Difix VAE (reduced for OOM)
+            TARGET = 1024  # max side length fed to Difix VAE (reduced for OOM)
             print(f"DEBUG: Using TARGET resolution {TARGET}, processing image {i+1}/{len(novel_poses)}")
             long_side = max(image.width, image.height)
             if long_side > TARGET:
