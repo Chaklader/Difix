@@ -174,6 +174,7 @@ class Difix3DPipeline(VanillaPipeline):
         image_filenames = []
         for i in tqdm.trange(0, len(novel_poses), desc="Fixing artifacts..."):
             image = Image.open(f"{self.render_dir}/novel/{step}/Pred/{i:04d}.png").convert("RGB")
+
             ref_image = Image.open(ref_image_filenames[i]).convert("RGB") if ref_image_filenames is not None else None
 
             # Resize to multiple of 8
@@ -182,22 +183,42 @@ class Difix3DPipeline(VanillaPipeline):
             new_height = (original_size[1] // 8) * 8
             image = image.resize((new_width, new_height), Image.BILINEAR)
             if ref_image is not None:
-                ref_image = ref_image.resize((new_width, new_height), Image.BILINEAR)
+                ref_image = ref_image.resize((new_width, new_height), Image.BILINEAR
+
+            ref_image = Image.open(ref_image_filenames[i]).convert("RGB")
+            width, height = (1024, 512) if image.size[0] > image.size[1] else (512, 1024)
+
+            # Explicitly resize the inputs so their spatial dimensions match the
+            # requested width/height.  This prevents mismatches inside the VAE
+            # decoder when tiling is enabled (e.g. tensor 96 vs 72).
+            if image.size != (width, height):
+                image = image.resize((width, height), Image.LANCZOS)
+            if ref_image is not None and ref_image.size != (width, height):
+                ref_image = ref_image.resize((width, height), Image.LANCZOS)
+
 
             output_image = self.difix(
                 prompt="remove degradation",
                 image=image,
                 ref_image=ref_image,
+<<<<<<< HEAD
                 width=new_width,
                 height=new_height,
+=======
+                width=width,
+                height=height,
+>>>>>>> 37d3a04514451475e8e24a31b2e9b21fc200a47d
                 num_inference_steps=1,
                 timesteps=[199],
                 guidance_scale=0.0,
             ).images[0]
+<<<<<<< HEAD
 
             # Resize back to original size
             output_image = output_image.resize(original_size, Image.BILINEAR)
 
+=======
+>>>>>>> 37d3a04514451475e8e24a31b2e9b21fc200a47d
             os.makedirs(f"{self.render_dir}/novel/{step}/Fixed", exist_ok=True)
             output_image.save(f"{self.render_dir}/novel/{step}/Fixed/{i:04d}.png")
             if ref_image is not None:
