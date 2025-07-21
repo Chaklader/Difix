@@ -40,6 +40,7 @@ ns-train difix3d \
     --vis viewer \
     --output_dir "${OUTPUT_DIR}" \
     --experiment_name "${SCENE_ID}" \
+    --timestamp '' \
     --load-checkpoint "${CKPT_PATH}" \
     --max_num_iterations 30000 \
     --steps_per_eval_all_images 0 \
