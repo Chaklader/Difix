@@ -30,9 +30,9 @@ print_line () { printf "%s | %4d | %4d | %s\n" "$1" "$2" "$3" "$4"; }
 
 if command -v identify &>/dev/null; then
   # ---------- fast path: ImageMagick present ----------
-  for img in "$IMAGES_DIR"/*.@(png|jpg|jpeg); do
+  while IFS= read -r -d '' img; do
     (( total++ ))
-    read -r w h <<<"$(identify -format "%w %h" "$img")"
+    read -r w h <<<"$(identify -format '%w %h' "$img")"
     base=$(basename "$img")
     if (( w % DIVISOR == 0 && h % DIVISOR == 0 )); then
       print_line "$base" "$w" "$h" "yes"
@@ -40,7 +40,7 @@ if command -v identify &>/dev/null; then
       print_line "$base" "$w" "$h" "NO"
       bad+=("$base")
     fi
-  done
+  done < <(find "$IMAGES_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \) -print0)
 else
   echo "Error: 'identify' (ImageMagick) not found. Please install ImageMagick or adjust the script." >&2
   exit 1
