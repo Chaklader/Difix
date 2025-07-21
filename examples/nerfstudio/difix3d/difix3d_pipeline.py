@@ -167,7 +167,6 @@ class Difix3DPipeline(VanillaPipeline):
         # running the entire pipeline in fp16. Also free any leftover
         # training tensors before starting the fixer loop.
         # -------------------------------------------------------------
-        import torch
         torch.cuda.empty_cache()
         self.difix.enable_vae_tiling()  # decode in 64×64 tiles
         self.difix.to(dtype=torch.float16)
