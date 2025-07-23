@@ -2,7 +2,7 @@
 # Nerfacto training launcher (30k iterations)
 # Usage:
 #   chmod +x riun_nerfacto.sh
-#   ./riun_nerfacto.sh > train.log 2>&1 &
+#   ./run_nerfacto.sh > nerfacto.log 2>&1 &
 # -----------------------------------------------------------------------------
 set -euo pipefail
 
