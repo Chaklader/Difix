@@ -19,7 +19,7 @@ RUN_NAME="nerfacto_$(date +%Y%m%d_%H%M%S)"
 #   • 30 000 iterations as requested
 #   • WandB visualisation enabled
 #   • Project name fixed to DC-DEV
-#   • 95% of images used for training, 5% for validation/test
+#   • 90% of images used for training, 10% for validation/test
 #   • Viewer closed automatically on completion
 # -----------------------------------------------------------------------------
 ns-train nerfacto \
@@ -33,3 +33,6 @@ ns-train nerfacto \
   --data "${DATA_DIR}" \
   --downscale_factor 1 \
   --train-split-fraction 0.9
+
+
+echo "Nerfacto training completed for 30k iterations"
