@@ -10,8 +10,8 @@ set -euo pipefail
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
-DATA_DIR="/mnt/nvme0n1/azureuser/datasets/nerfacto/nerf_data/colmap_process_bad"   # processed dataset
-RUN_NAME="nerfacto_bad_model_$(date +%Y%m%d_%H%M%S)"
+DATA_DIR="/mnt/nvme0n1/azureuser/datasets/nerfacto/nerf_data/colmap_process_good"   # processed dataset
+RUN_NAME="nerfacto_good_model_$(date +%Y%m%d_%H%M%S)"
 
 # -----------------------------------------------------------------------------
 # Launch Nerfacto training
