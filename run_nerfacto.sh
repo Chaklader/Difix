@@ -10,18 +10,9 @@ set -euo pipefail
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
-DATA_DIR="/mnt/nvme0n1/azureuser/datasets/nerfacto/nerf_data/colmap_process_good"   # processed dataset
+DATA_DIR="/mnt/nvme0n1/azureuser/datasets/nerfacto/nerf_data/colmap_process_good"   
 RUN_NAME="nerfacto_good_model_$(date +%Y%m%d_%H%M%S)"
 
-# -----------------------------------------------------------------------------
-# Launch Nerfacto training
-# Notes:
-#   • 30 000 iterations as requested
-#   • WandB visualisation enabled
-#   • Project name fixed to DC-DEV
-#   • 90% of images used for training, 10% for validation/test
-#   • Viewer closed automatically on completion
-# -----------------------------------------------------------------------------
 ns-train nerfacto \
   --machine.num-devices 1 \
   --vis wandb \
@@ -35,4 +26,4 @@ ns-train nerfacto \
   --train-split-fraction 0.9
 
 
-echo "Nerfacto training completed for 30k iterations"
+echo "Nerfacto training completed for 30k iterations - GOOD model"
