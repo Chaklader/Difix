@@ -123,14 +123,11 @@ echo "Exporting point cloud to ${OUT_DIR}/pointcloud.ply"
 # - Rendering speed in frames per second
 # - Depends on resolution and hardware
 
-ns-export pointcloud \
-  --load-config /mnt/nvme0n1/azureuser/finetune/difix3d_2025_07_21/difix3d_2025_07_21/difix3d/2025-07-21_134031/config.yml \
-  --output-dir assets/ \
-  --output-filename NeRF.ply
+# $ ns-export pointcloud \
+#   --load-config outputs/nerfacto_sean_huge_20250726_074121/nerfacto/2025-07-26_074128/config.yml \
+#   --output-dir assets/ \
+#   --normal-method open3d
 
-# ## Summary:
-# Your model has **good visual quality** (high SSIM) with **moderate pixel accuracy** (PSNR). It renders **very fast** 
-# (72M rays/sec). The high standard deviations suggest quality varies across different test views.
 
 ns-export gaussian-splat \
   --load-config "${CFG}" \
