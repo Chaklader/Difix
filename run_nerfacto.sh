@@ -11,9 +11,9 @@ export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
 DATA_DIR="/mnt/nvme0n1/azureuser/datasets/nerfacto/nerf_data/colmap_process_good"   
-RUN_NAME="nerfacto_good_model_$(date +%Y%m%d_%H%M%S)"
+RUN_NAME="nerfacto_good_model_huge_$(date +%Y%m%d_%H%M%S)"
 
-ns-train nerfacto \
+ns-train nerfacto-huge \
   --machine.num-devices 1 \
   --vis wandb \
   --viewer.quit-on-train-completion True \
@@ -27,3 +27,4 @@ ns-train nerfacto \
 
 
 echo "Nerfacto training completed for 30k iterations - GOOD model"
+
