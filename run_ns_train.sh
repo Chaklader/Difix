@@ -3,8 +3,8 @@ set -euo pipefail
 
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
-DATA_DIR="/home/azureuser/datasets/colmap_processed"   
-RUN_NAME="splatfacto_sean_set3_$(date +%Y%m%d_%H%M%S)"
+DATA_DIR="/home/azureuser/datasets/nerfacto/nerf_data/colmap_process_good"   
+RUN_NAME="splatfacto_good_model_SET_3_$(date +%Y%m%d_%H%M%S)"
 
 ns-train splatfacto \
   --machine.num-devices 1 \
