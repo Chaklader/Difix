@@ -37,7 +37,12 @@ def export_raw_glb(ply_path: Path, tmp_glb: Path) -> None:
     vertices (and any vertex colours) intact.  This avoids geometry
     distortion and removes heavy dependencies like SciPy.
     """
-    cloud = trimesh.load(ply_path, force='mesh')  # PointCloud or Trimesh
+    # Load PLY; this may return PointCloud, Trimesh, or Scene
+    obj = trimesh.load(ply_path)
+    if isinstance(obj, trimesh.Scene):
+        # Merge all geometry into a single cloud/mesh
+        obj = trimesh.util.concatenate(tuple(g for g in obj.geometry.values()))
+    cloud = obj  # now PointCloud or Trimesh
 
     if cloud.is_empty:
         raise RuntimeError(f"No vertices found in {ply_path}")
