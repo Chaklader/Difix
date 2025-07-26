@@ -27,67 +27,23 @@ import tempfile
 from pathlib import Path
 
 import trimesh
-import numpy as np
-from scipy.spatial import ConvexHull
+
 
 
 def export_raw_glb(ply_path: Path, tmp_glb: Path) -> None:
-    """Export PLY point cloud → GLB mesh using convex hull."""
-    # Load as point cloud
-    points = trimesh.load(ply_path)
-    
-    if not hasattr(points, 'vertices') or len(points.vertices) == 0:
+    """Export every point from the input PLY directly into a GLB.
+
+    The glTF standard supports POINTS primitives, so we simply keep all
+    vertices (and any vertex colours) intact.  This avoids geometry
+    distortion and removes heavy dependencies like SciPy.
+    """
+    cloud = trimesh.load(ply_path, force='mesh')  # PointCloud or Trimesh
+
+    if cloud.is_empty:
         raise RuntimeError(f"No vertices found in {ply_path}")
-    
-    print(f"[ply2glb] Loaded {len(points.vertices)} points")
-    
-    # Convert point cloud to mesh using convex hull
-    try:
-        print("[ply2glb] Creating mesh from convex hull...")
-        hull = ConvexHull(points.vertices)
-        mesh = trimesh.Trimesh(vertices=points.vertices, faces=hull.simplices)
-        
-        # Preserve colors if available
-        if hasattr(points, 'colors') and points.colors is not None:
-            mesh.visual.vertex_colors = points.colors
-            print("[ply2glb] Preserved vertex colors")
-        elif hasattr(points.visual, 'vertex_colors') and points.visual.vertex_colors is not None:
-            mesh.visual.vertex_colors = points.visual.vertex_colors
-            print("[ply2glb] Preserved vertex colors from visual")
-            
-        print(f"[ply2glb] Created mesh with {len(mesh.faces)} faces")
-        mesh.export(tmp_glb, file_type='glb')
-        
-    except Exception as e:
-        print(f"[ply2glb] ConvexHull failed: {e}")
-        print("[ply2glb] Falling back to sampled sphere method...")
-        
-        # Fallback: create spheres at sampled points
-        step = max(1, len(points.vertices) // 10000)  # Sample to ~10k points max
-        sampled_vertices = points.vertices[::step]
-        sampled_colors = None
-        
-        if hasattr(points, 'colors') and points.colors is not None:
-            sampled_colors = points.colors[::step]
-        elif hasattr(points.visual, 'vertex_colors') and points.visual.vertex_colors is not None:
-            sampled_colors = points.visual.vertex_colors[::step]
-        
-        spheres = []
-        sphere_base = trimesh.creation.icosphere(radius=0.005, subdivisions=1)
-        
-        for i, vertex in enumerate(sampled_vertices):
-            sphere = sphere_base.copy()
-            sphere.apply_translation(vertex)
-            if sampled_colors is not None and i < len(sampled_colors):
-                sphere.visual.vertex_colors = sampled_colors[i]
-            spheres.append(sphere)
-        
-        if spheres:
-            mesh = trimesh.util.concatenate(spheres)
-            mesh.export(tmp_glb, file_type='glb')
-            print(f"[ply2glb] Created sphere mesh with {len(sampled_vertices)} spheres")
-        else:
-            raise RuntimeError("Could not create mesh from point cloud")
+
+    print(f"[ply2glb] Loaded {len(cloud.vertices)} points – exporting GLB…")
+    cloud.export(tmp_glb, file_type='glb')
 
 
 def draco_compress(input_glb: Path, output_glb: Path) -> bool:
