@@ -18,7 +18,6 @@ The script first exports an uncompressed GLB with trimesh, then – if the
 `-tc -noq` (Draco, no quantisation → loss-less).  If `gltfpack` is not
 found, it leaves the raw GLB in place and prints a warning.
 """
-from __future__ import annotations
 
 import argparse
 import shutil
@@ -28,29 +27,78 @@ import tempfile
 from pathlib import Path
 
 import trimesh
+import numpy as np
+from scipy.spatial import ConvexHull
 
 
 def export_raw_glb(ply_path: Path, tmp_glb: Path) -> None:
-    """Export PLY → GLB without compression using trimesh."""
-    mesh = trimesh.load(ply_path, force='mesh')
-    if mesh.is_empty:
-        raise RuntimeError(f"Failed to load mesh from {ply_path}")
-
-    mesh.export(tmp_glb, file_type='glb')
+    """Export PLY point cloud → GLB mesh using convex hull."""
+    # Load as point cloud
+    points = trimesh.load(ply_path)
+    
+    if not hasattr(points, 'vertices') or len(points.vertices) == 0:
+        raise RuntimeError(f"No vertices found in {ply_path}")
+    
+    print(f"[ply2glb] Loaded {len(points.vertices)} points")
+    
+    # Convert point cloud to mesh using convex hull
+    try:
+        print("[ply2glb] Creating mesh from convex hull...")
+        hull = ConvexHull(points.vertices)
+        mesh = trimesh.Trimesh(vertices=points.vertices, faces=hull.simplices)
+        
+        # Preserve colors if available
+        if hasattr(points, 'colors') and points.colors is not None:
+            mesh.visual.vertex_colors = points.colors
+            print("[ply2glb] Preserved vertex colors")
+        elif hasattr(points.visual, 'vertex_colors') and points.visual.vertex_colors is not None:
+            mesh.visual.vertex_colors = points.visual.vertex_colors
+            print("[ply2glb] Preserved vertex colors from visual")
+            
+        print(f"[ply2glb] Created mesh with {len(mesh.faces)} faces")
+        mesh.export(tmp_glb, file_type='glb')
+        
+    except Exception as e:
+        print(f"[ply2glb] ConvexHull failed: {e}")
+        print("[ply2glb] Falling back to sampled sphere method...")
+        
+        # Fallback: create spheres at sampled points
+        step = max(1, len(points.vertices) // 10000)  # Sample to ~10k points max
+        sampled_vertices = points.vertices[::step]
+        sampled_colors = None
+        
+        if hasattr(points, 'colors') and points.colors is not None:
+            sampled_colors = points.colors[::step]
+        elif hasattr(points.visual, 'vertex_colors') and points.visual.vertex_colors is not None:
+            sampled_colors = points.visual.vertex_colors[::step]
+        
+        spheres = []
+        sphere_base = trimesh.creation.icosphere(radius=0.005, subdivisions=1)
+        
+        for i, vertex in enumerate(sampled_vertices):
+            sphere = sphere_base.copy()
+            sphere.apply_translation(vertex)
+            if sampled_colors is not None and i < len(sampled_colors):
+                sphere.visual.vertex_colors = sampled_colors[i]
+            spheres.append(sphere)
+        
+        if spheres:
+            mesh = trimesh.util.concatenate(spheres)
+            mesh.export(tmp_glb, file_type='glb')
+            print(f"[ply2glb] Created sphere mesh with {len(sampled_vertices)} spheres")
+        else:
+            raise RuntimeError("Could not create mesh from point cloud")
 
 
 def draco_compress(input_glb: Path, output_glb: Path) -> bool:
-    """Run gltfpack with loss-less Draco compression.
-
-    Returns True on success, False if gltfpack not found.
-    """
+    """Run gltfpack with loss-less Draco compression."""
     gltfpack = shutil.which('gltfpack')
     if gltfpack is None:
         return False
 
     cmd = [gltfpack, '-i', str(input_glb), '-o', str(output_glb), '-tc', '-noq']
     try:
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, capture_output=True)
         return True
     except subprocess.CalledProcessError as e:
         print(f"[ply2glb] gltfpack failed ({e}). Keeping raw GLB.", file=sys.stderr)
@@ -64,28 +112,27 @@ def convert(ply_path: Path, output_glb: Path) -> None:
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_glb = Path(tmpdir) / 'temp.glb'
-        print(f"[ply2glb] Exporting raw GLB → {tmp_glb} …")
+        print(f"[ply2glb] Converting {ply_path} to GLB...")
         export_raw_glb(ply_path, tmp_glb)
 
         # Attempt Draco compression
         if draco_compress(tmp_glb, output_glb):
-            print(f"[ply2glb] Draco-compressed GLB written to: {output_glb}")
+            print(f"[ply2glb] ✅ Draco-compressed GLB written to: {output_glb}")
         else:
             shutil.move(tmp_glb, output_glb)
-            print(
-                "[ply2glb] Warning: `gltfpack` not found – wrote uncompressed GLB.\n"
-                "Install MeshOptimizer (gltfpack) and add it to PATH for Draco compression.")
+            print(f"[ply2glb] ✅ Uncompressed GLB written to: {output_glb}")
+            print("[ply2glb] Install gltfpack for Draco compression: sudo apt install meshoptimizer")
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Convert PLY to Draco-compressed GLB')
+    parser = argparse.ArgumentParser(description='Convert PLY point cloud to GLB mesh')
     parser.add_argument('--in', dest='inp', default='assets/NeRF.ply', help='Input PLY file')
     parser.add_argument('--out', dest='out', default='assets/NeRF.glb', help='Output GLB file')
     args = parser.parse_args()
 
     try:
         convert(Path(args.inp), Path(args.out))
-        print('[ply2glb] Done.')
+        print('[ply2glb] Done!')
     except Exception as exc:
         print(f'[ply2glb] Error: {exc}', file=sys.stderr)
         sys.exit(1)
