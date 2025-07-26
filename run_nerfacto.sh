@@ -10,7 +10,7 @@ set -euo pipefail
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
-DATA_DIR="/mnt/nvme0n1/azureuser/datasets/colmap_workspace"   
+DATA_DIR="/mnt/nvme0n1/azureuser/datasets/colmap_processed"   
 RUN_NAME="nerfacto_sean_huge_$(date +%Y%m%d_%H%M%S)"
 
 ns-train nerfacto-huge \
