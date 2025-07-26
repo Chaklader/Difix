@@ -10,8 +10,8 @@ set -euo pipefail
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 
 # -----------------------------------------------------------------------------
-DATA_DIR="/mnt/nvme0n1/azureuser/datasets/nerfacto/nerf_data/colmap_process_bad"   
-RUN_NAME="nerfacto_bad_model_huge_$(date +%Y%m%d_%H%M%S)"
+DATA_DIR="/mnt/nvme0n1/azureuser/datasets/colmap_workspace"   
+RUN_NAME="nerfacto_sean_huge_$(date +%Y%m%d_%H%M%S)"
 
 ns-train nerfacto-huge \
   --machine.num-devices 1 \
@@ -26,5 +26,5 @@ ns-train nerfacto-huge \
   --train-split-fraction 0.9
 
 
-echo "Nerfacto training completed for 30k iterations - BAD model"
+echo "Nerfacto training completed for 30k iterations - SEAN model"
 
